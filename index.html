@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400..800,100&family=Lexend:wght@300;400;500;600;700&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=6">
+  <link rel="stylesheet" href="styles.css?v=8">
 </head>
 <body>
 
@@ -27,114 +27,39 @@
   </header>
 
   <main>
-    <!-- ============ BOLO MONTADO NO SCROLL ============ -->
-    <section class="build" id="inicio" aria-label="Um bolo sendo montado enquanto você rola a página">
-      <div class="stage">
-        <canvas id="cake-canvas" aria-hidden="true"></canvas>
-
-        <div class="loader" id="loader">
-          <img class="loader__logo" src="img/logo-amorino.webp" alt="" width="900" height="433">
-          <span class="loader__bar"><span></span></span>
-          <span class="loader__text">pré-aquecendo o forno…</span>
-        </div>
-
-
-        <!-- Cartões de cada etapa (ativados pelo progresso do scroll) -->
-        <div class="steps">
-          <article class="step step--hero" data-start="0" data-end="0.05">
-            <h1 class="hero-logo"><img src="img/logo-amorino.webp" alt="Amorino" width="900" height="433"></h1>
-            <p class="hero-tagline">uma doce dose de carinho</p>
-            <p class="eyebrow">Confeitaria · São Caetano do Sul, SP</p>
-            <p class="scroll-hint"><span class="scroll-hint__mouse"></span>Role para montar o seu bolo</p>
-          </article>
-
-          <!-- Janelas de scroll alinhadas aos trechos do vídeo (ver js/bolo.js) -->
-          <article class="step" data-start="0.055" data-end="0.16">
-            <span class="step__num">01</span>
-            <h2>A primeira camada</h2>
-            <p>Tudo começa com uma massa fofinha. Você escolhe o sabor:</p>
-            <ul class="chips">
-              <li>Branca</li><li>Chocolate</li><li>Limão</li><li>Canela</li><li>Cacau Black</li>
-            </ul>
-          </article>
-
-          <article class="step step--right" data-start="0.165" data-end="0.275">
-            <span class="step__num">02</span>
-            <h2>Recheio rosa</h2>
-            <p>Uma camada generosa de recheio de frutas, espalhada até a borda.</p>
-            <ul class="chips chips--pink">
-              <li>Morango</li><li>Uva</li><li>Abacaxi</li><li>Ameixa</li>
-            </ul>
-            <p class="price">Recheios frutas · <strong>R$ 105/kg</strong></p>
-          </article>
-
-          <article class="step" data-start="0.28" data-end="0.385">
-            <span class="step__num">03</span>
-            <h2>Mais uma camada</h2>
-            <p>Porque bolo bom é bolo alto. Massa por cima, bem nivelada.</p>
-          </article>
-
-          <article class="step step--right" data-start="0.39" data-end="0.505">
-            <span class="step__num">04</span>
-            <h2>Recheio branco</h2>
-            <p>Agora o cremoso: leite ninho, coco, brigadeiro branco trufado…</p>
-            <p class="price">Recheios únicos · <strong>R$ 95/kg</strong><br>Recheios trufados · <strong>R$ 110/kg</strong></p>
-          </article>
-
-          <article class="step" data-start="0.51" data-end="0.585">
-            <span class="step__num">05</span>
-            <h2>Terceira camada</h2>
-            <p>Mais massa de chocolate, alinhadinha com as de baixo.</p>
-          </article>
-
-          <article class="step step--right" data-start="0.59" data-end="0.715">
-            <span class="step__num">06</span>
-            <h2>Mais recheio</h2>
-            <p>Outra camada rosinha. Que tal uma geleia artesanal?</p>
-            <ul class="chips chips--pink">
-              <li>Morango</li><li>Frutas Vermelhas</li>
-            </ul>
-            <p class="price">Recheios geleias · <strong>R$ 115/kg</strong></p>
-          </article>
-
-          <article class="step" data-start="0.72" data-end="0.84">
-            <span class="step__num">07</span>
-            <h2>A camada final</h2>
-            <p>Quatro camadas de massa. Escolha o peso certo para a sua festa:</p>
-            <ul class="sizes-mini">
-              <li><b>P</b> 1,5 kg · 10 a 15 fatias</li>
-              <li><b>M</b> 2 kg · 15 a 20 fatias</li>
-              <li><b>G</b> 3 kg · 25 a 30 fatias</li>
-            </ul>
-          </article>
-
-          <article class="step step--right" data-start="0.845" data-end="0.905">
-            <span class="step__num">08</span>
-            <h2>A decoração</h2>
-            <p>Ganache escorrendo, rosetas de chantilly, frutas e granulado.</p>
-            <p class="note">✨ <strong>Inspirações são super bem-vindas!</strong> ✨</p>
-          </article>
-
-          <article class="step step--final" data-start="0.91" data-end="1.01">
-            <h2>Pronto pra festa.</h2>
-            <p>Do forno pra sua mesa, com uma doce dose de carinho.</p>
-            <div class="btn-row">
-              <a href="#encomende" class="btn">Montar meu pedido</a>
-              <a href="#bolos" class="btn btn--ghost">Ver cardápio</a>
+    <!-- ============ BOLO DESCONSTRUÍDO (camadas se juntam com o scroll) ============ -->
+    <section class="desc" id="inicio" aria-label="Bolo de maracujá: as camadas se juntam conforme você rola a página">
+      <div class="desc__stage">
+        <div class="desc__grid">
+          <div class="desc__text">
+            <div class="desc__intro" id="desc-intro">
+              <p class="eyebrow">Confeitaria · São Caetano do Sul, SP</p>
+              <h1 class="desc__logo"><img src="img/logo-amorino.webp" alt="Amorino" width="900" height="433"></h1>
+              <p class="desc__tagline">uma doce dose de carinho</p>
+              <p class="scroll-hint"><span class="scroll-hint__mouse"></span>Role e veja as camadas se encontrarem</p>
             </div>
-          </article>
-        </div>
+            <div class="desc__final" id="desc-final">
+              <p class="eyebrow">Massa black · mousse · calda com sementes</p>
+              <h2 class="desc__title">Bolo de <span>Maracujá</span></h2>
+              <p class="desc__lead">Massa black, mousse de maracujá e calda de maracujá com sementes, camada por camada.</p>
+              <div class="btn-row">
+                <a href="#" class="btn js-whatsapp" data-msg="Oi, Amorino! Quero encomendar o Bolo de Maracujá 💛">Encomendar pelo WhatsApp</a>
+                <a href="#bolos" class="btn btn--ghost">Ver cardápio</a>
+              </div>
+            </div>
+          </div>
 
-        <ol class="rail" aria-hidden="true">
-          <li data-at="0.055">Massa</li>
-          <li data-at="0.165">Recheio rosa</li>
-          <li data-at="0.28">Massa</li>
-          <li data-at="0.39">Recheio branco</li>
-          <li data-at="0.51">Massa</li>
-          <li data-at="0.59">Recheio rosa</li>
-          <li data-at="0.72">Massa</li>
-          <li data-at="0.845">Decoração</li>
-        </ol>
+          <div class="desc__visual" id="desc-visual">
+            <img class="desc__poster" id="desc-poster" src="img/bolo-maracuja/explodido-poster.webp" alt="" width="432" height="768">
+            <canvas id="bolo-canvas" aria-hidden="true"></canvas>
+            <!-- y0/y1: altura da camada (fração do frame) no bolo explodido e no montado -->
+            <ul class="desc__labels" aria-hidden="true">
+              <li class="desc__label desc__label--right" data-y0="0.254" data-y1="0.506">Calda de maracujá com sementes</li>
+              <li class="desc__label desc__label--left" data-y0="0.387" data-y1="0.583">Mousse de maracujá</li>
+              <li class="desc__label desc__label--right" data-y0="0.492" data-y1="0.62">Massa black</li>
+            </ul>
+          </div>
+        </div>
 
         <a href="#bolos" class="skip" id="skip">pular animação <span aria-hidden="true">↓</span></a>
       </div>
@@ -508,7 +433,7 @@
     <p class="footer__fine">© <span id="year"></span> Amorino Confeitaria</p>
   </footer>
 
-  <script src="js/site.js?v=6"></script>
-  <script src="js/bolo.js?v=6"></script>
+  <script src="js/site.js?v=8"></script>
+  <script src="js/bolo.js?v=8"></script>
 </body>
 </html>

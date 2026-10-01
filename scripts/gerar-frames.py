@@ -1,22 +1,23 @@
 #!/usr/bin/env python3
-"""Gera os frames da animação do bolo a partir dos vídeos em img/bolo/video/.
+"""Gera os frames da animação "bolo desconstruído" a partir de img/bolo-maracuja/montagem.mp4.
 
-Uso:  python3 scripts/gerar-frames.py [--frames 150] [--limiar 0.25]
+Uso:  python3 scripts/gerar-frames.py [--frames 120] [--limiar 0.25]
 
 Passos:
-  1. Para cada trecho-N.mp4 (em ordem), mede o movimento quadro a quadro e corta
-     os segundos parados no início e no fim (para a animação não "travar").
-  2. Junta os trechos cortados e escolhe --frames quadros igualmente espaçados.
-  3. Ajusta o fundo para #EFDCC0 (normaliza o degradê/vinheta e o balanço de branco
-     do vídeo, estimados nas laterais vazias de cada quadro) e esfuma as bordas nessa cor, para não haver emenda.
-  4. Salva img/bolo/frames/frame-001.webp… (1280×720) e img/bolo/frames-mobile/ (640×500, só a faixa central do bolo).
+  1. Mede o movimento quadro a quadro e corta os trechos parados no início e no fim.
+  2. Escolhe --frames quadros igualmente espaçados pelo MOVIMENTO ACUMULADO (e não pelo
+     tempo): o vídeo desacelera no meio, e assim cada trecho de rolagem move as camadas
+     na mesma medida — a animação não "trava".
+  3. Mede a cor real do fundo (mediana das bordas) e normaliza o fundo de cada quadro
+     para essa cor (o vídeo tem vinheta/degradê), esfumando as bordas na mesma cor.
+  4. Salva img/bolo-maracuja/frames/frame-001.webp… (720×1280), frames-mobile/ (432×768)
+     e explodido-poster.webp (explodido.jpg alinhado e com o mesmo fundo, para o carregamento).
 
-Requer: ffmpeg/ffprobe, Pillow e numpy (pip install pillow numpy).
+Requer: ffmpeg, Pillow e numpy (pip install pillow numpy).
 """
 import argparse
 import glob
 import os
-import re
 import shutil
 import subprocess
 import tempfile
@@ -25,121 +26,123 @@ import numpy as np
 from PIL import Image, ImageChops, ImageStat
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-VIDEOS = os.path.join(RAIZ, 'img', 'bolo', 'video')
-SAIDA = os.path.join(RAIZ, 'img', 'bolo', 'frames')
-SAIDA_MOBILE = os.path.join(RAIZ, 'img', 'bolo', 'frames-mobile')
-FUNDO = np.array([0xEF, 0xDC, 0xC0], float)
-CORTE_MOBILE = (0.14, 0.86) # faixa horizontal do quadro usada no mobile (o bolo e sua sombra)
-TAM_MOBILE = (640, 500)     # 72% de 1280 × 720, reduzido
+PASTA = os.path.join(RAIZ, 'img', 'bolo-maracuja')
+VIDEO = os.path.join(PASTA, 'montagem.mp4')
+SAIDA = os.path.join(PASTA, 'frames')
+SAIDA_MOBILE = os.path.join(PASTA, 'frames-mobile')
+TAM = (720, 1280)
+TAM_MOBILE = (432, 768)
 
 
 def ffmpeg(*args):
     subprocess.run(['ffmpeg', '-v', 'error', '-y', *args], check=True)
 
 
-def cortes(video, tmp, limiar):
-    """Primeiro e último quadro com movimento (média móvel da diferença > limiar)."""
-    pasta = os.path.join(tmp, 'mov')
-    shutil.rmtree(pasta, ignore_errors=True)
-    os.makedirs(pasta)
-    ffmpeg('-i', video, '-vf', 'scale=160:-1,format=gray', os.path.join(pasta, '%04d.png'))
-    fs = sorted(glob.glob(os.path.join(pasta, '*.png')))
-    d = [ImageStat.Stat(ImageChops.difference(Image.open(a), Image.open(b))).mean[0] for a, b in zip(fs, fs[1:])]
-    s = [sum(d[max(0, k - 1):k + 2]) / len(d[max(0, k - 1):k + 2]) for k in range(len(d))]
-    mov = [k for k, v in enumerate(s) if v > limiar]
-    if not mov:
-        return 0, len(fs) - 1
-    return mov[0], mov[-1] + 1
-
-
 def _base(x, y, d=3):
     return np.stack([x ** i * y ** j for i in range(d + 1) for j in range(d + 1 - i)], -1)
 
 
-def coef_fundo(quadro):
-    """Coeficientes de um polinômio de 3º grau (x, y) ajustado nas laterais vazias do quadro.
-    Ignora o centro (bolo/boleira, camadas caindo) e a sombra da boleira no chão."""
-    small = np.asarray(Image.open(quadro).convert('RGB').resize((320, 180), Image.BILINEAR), float)
-    h, w, _ = small.shape
+def _coords(w, h):
     ys, xs = np.mgrid[0:h, 0:w]
-    x, y = xs / w, ys / h
-    vazio = ~((x > 0.25) & (x < 0.75)) & ~((y > 0.62) & (x > 0.5))
-    A = _base(x[vazio], y[vazio])
-    return np.stack([np.linalg.lstsq(A, small[..., c][vazio], rcond=None)[0] for c in range(3)])
+    return (xs + 0.5) / w, (ys + 0.5) / h
+
+
+def mascara_fundo(x, y):
+    """Áreas só de fundo: fora do bolo/boleira (centro) e fora da sombra da boleira."""
+    bolo = (x > 0.15) & (x < 0.85) & (y > 0.12) & (y < 0.92)
+    sombra = (x > 0.5) & (y > 0.72)
+    return ~bolo & ~sombra
+
+
+def coef_fundo(img):
+    small = np.asarray(img.convert('RGB').resize((180, 320), Image.BILINEAR), float)
+    x, y = _coords(180, 320)
+    m = mascara_fundo(x, y)
+    A = _base(x[m], y[m])
+    return np.stack([np.linalg.lstsq(A, small[..., c][m], rcond=None)[0] for c in range(3)])
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--frames', type=int, default=150)
+    ap.add_argument('--frames', type=int, default=120)
     ap.add_argument('--limiar', type=float, default=0.25, help='movimento mínimo para não ser "parado"')
     args = ap.parse_args()
 
-    videos = sorted(glob.glob(os.path.join(VIDEOS, 'trecho-*.mp4')),
-                    key=lambda p: int(re.search(r'(\d+)', os.path.basename(p)).group(1)))
-    if not videos:
-        raise SystemExit(f'Nenhum trecho-*.mp4 em {VIDEOS}')
-
     with tempfile.TemporaryDirectory() as tmp:
-        lista, fins, total = [], [], 0
-        for v in videos:
-            ini, fim = cortes(v, tmp, args.limiar)
-            out = os.path.join(tmp, os.path.basename(v))
-            ffmpeg('-i', v, '-vf', f'trim=start_frame={ini}:end_frame={fim + 1},setpts=PTS-STARTPTS',
-                   '-an', '-c:v', 'libx264', '-crf', '12', '-preset', 'veryfast', out)
-            n = fim - ini + 1
-            total += n
-            fins.append(total)
-            lista.append(f"file '{out}'")
-            print(f'{os.path.basename(v)}: mantém quadros {ini}–{fim} ({n} quadros)')
-        with open(os.path.join(tmp, 'lista.txt'), 'w') as f:
-            f.write('\n'.join(lista))
-        todos = os.path.join(tmp, 'todos.mp4')
-        ffmpeg('-f', 'concat', '-safe', '0', '-i', os.path.join(tmp, 'lista.txt'), '-c', 'copy', todos)
-        raw = os.path.join(tmp, 'raw')
-        os.makedirs(raw)
-        ffmpeg('-i', todos, os.path.join(raw, '%04d.png'))
-        quadros = sorted(glob.glob(os.path.join(raw, '*.png')))
-        total = len(quadros)
+        cinza, cor = os.path.join(tmp, 'g'), os.path.join(tmp, 'c')
+        os.makedirs(cinza)
+        os.makedirs(cor)
+        ffmpeg('-i', VIDEO, '-vf', 'scale=90:-1,format=gray', os.path.join(cinza, '%04d.png'))
+        ffmpeg('-i', VIDEO, os.path.join(cor, '%04d.png'))
+        gs = sorted(glob.glob(os.path.join(cinza, '*.png')))
+        quadros = sorted(glob.glob(os.path.join(cor, '*.png')))
+
+        # 1. movimento quadro a quadro e corte do início/fim parados
+        d = [ImageStat.Stat(ImageChops.difference(Image.open(a), Image.open(b))).mean[0] for a, b in zip(gs, gs[1:])]
+        s = [sum(d[max(0, k - 1):k + 2]) / len(d[max(0, k - 1):k + 2]) for k in range(len(d))]
+        mov = [k for k, v in enumerate(s) if v > args.limiar]
+        ini, fim = mov[0], mov[-1] + 1
+        print(f'{len(quadros)} quadros no vídeo; mantém {ini}–{fim} (corta {ini} no início e {len(quadros) - 1 - fim} no fim)')
+
+        # 2. frames igualmente espaçados pelo movimento acumulado (ruído de ~0,1 descontado)
+        passo = np.maximum(np.array(d[ini:fim]) - 0.1, 0.01)
+        acum = np.concatenate([[0], np.cumsum(passo)])
+        N = args.frames
+        alvos = np.linspace(0, acum[-1], N)
+        escolhidos = [ini + int(np.argmin(np.abs(acum - a))) for a in alvos]
+
+        # 3. cor real do fundo e normalização
+        amostras = []
+        for i in (escolhidos[0], escolhidos[N // 2], escolhidos[-1]):
+            a = np.asarray(Image.open(quadros[i]).convert('RGB').resize((180, 320)), float)
+            x, y = _coords(180, 320)
+            amostras.append(a[mascara_fundo(x, y)])
+        fundo = np.round(np.median(np.concatenate(amostras), 0))
+        hexa = '#%02X%02X%02X' % tuple(fundo.astype(int))
+        print(f'Cor real do fundo (mediana das bordas): {hexa}')
 
         W, H = Image.open(quadros[0]).size
-        ys, xs = np.mgrid[0:H, 0:W]
-        X, Y = (xs + 0.5) / W, (ys + 0.5) / H
+        X, Y = _coords(W, H)
         B = _base(X, Y)
 
         def rampa(v, a):
             t = np.clip(v / a, 0, 1)
             return t * t * (3 - 2 * t)
 
-        borda = (rampa(X, 0.10) * rampa(1 - X, 0.10) * rampa(Y, 0.06) * rampa(1 - Y, 0.10))[..., None]
-        # Mobile: só a faixa central (o bolo), com bordas esfumadas próprias — mais leve
-        x0, x1 = round(W * CORTE_MOBILE[0]), round(W * CORTE_MOBILE[1])
-        Xm = (np.arange(x1 - x0)[None, :] + 0.5) / (x1 - x0)
-        borda_m = (rampa(Xm, 0.08) * rampa(1 - Xm, 0.08) * rampa(Y[:, :1], 0.06) * rampa(1 - Y[:, :1], 0.10))[..., None]
+        borda = (rampa(X, 0.12) * rampa(1 - X, 0.12) * rampa(Y, 0.08) * rampa(1 - Y, 0.12))
+        # a sombra da boleira (abaixo do prato, à direita) some aos poucos em vez de ser cortada na borda
+        abaixo_do_prato = rampa(Y - 0.76, 0.05)
+        sombra_some = 1 - rampa(X - 0.64, 0.22)
+        borda = (borda * (1 - abaixo_do_prato * (1 - sombra_some)))[..., None]
 
-        # O vídeo muda o balanço de branco ao longo dos trechos: o fundo é estimado em
-        # cada quadro e suavizado entre quadros vizinhos (evita "piscar").
-        N = args.frames
-        escolhidos = [round(k * (total - 1) / (N - 1)) for k in range(N)]
-        coefs = np.array([coef_fundo(quadros[i]) for i in escolhidos])
-        suav = np.array([coefs[max(0, k - 3):k + 4].mean(0) for k in range(N)])
+        def normalizar(img, coefs):
+            modelo = np.stack([B @ c for c in coefs], -1)
+            im = np.asarray(img.convert('RGB'), float) * (fundo / modelo)
+            im = im * borda + fundo * (1 - borda)
+            return Image.fromarray(np.clip(im + 0.5, 0, 255).astype('uint8'))
 
-        for pasta in (SAIDA, SAIDA_MOBILE):
-            shutil.rmtree(pasta, ignore_errors=True)
-            os.makedirs(pasta)
+        coefs = np.array([coef_fundo(Image.open(quadros[i])) for i in escolhidos])
+        suav = np.array([coefs[max(0, k - 3):k + 4].mean(0) for k in range(N)])  # sem "piscar"
+
+        for p in (SAIDA, SAIDA_MOBILE):
+            shutil.rmtree(p, ignore_errors=True)
+            os.makedirs(p)
         for k, i in enumerate(escolhidos):
-            modelo = np.stack([B @ c for c in suav[k]], -1)
-            corr = np.asarray(Image.open(quadros[i]).convert('RGB'), float) * (FUNDO / modelo)
+            img = normalizar(Image.open(quadros[i]), suav[k])
             nome = f'frame-{k + 1:03d}.webp'
-            im = corr * borda + FUNDO * (1 - borda)
-            img = Image.fromarray(np.clip(im + 0.5, 0, 255).astype('uint8'))
-            img.resize((1280, 720), Image.LANCZOS).save(os.path.join(SAIDA, nome), 'WEBP', quality=80, method=6)
-            m = corr[:, x0:x1] * borda_m + FUNDO * (1 - borda_m)
-            img = Image.fromarray(np.clip(m + 0.5, 0, 255).astype('uint8'))
+            img.resize(TAM, Image.LANCZOS).save(os.path.join(SAIDA, nome), 'WEBP', quality=80, method=6)
             img.resize(TAM_MOBILE, Image.LANCZOS).save(os.path.join(SAIDA_MOBILE, nome), 'WEBP', quality=74, method=6)
 
-    inicios = [1] + [round((f - 1) / (total - 1) * (N - 1)) + 1 for f in fins[:-1]]
-    print(f'\n{N} frames salvos. Cada trecho começa no frame: {inicios}')
-    print('Ajuste BOLO.frames em js/bolo.js e os data-start/data-end dos cartões no index.html se necessário.')
+        # 4. poster: explodido.jpg alinhado ao 1º quadro e com o mesmo fundo
+        exp = Image.open(os.path.join(PASTA, 'explodido.jpg')).convert('RGB')
+        exp = exp.resize((W, round(exp.size[1] * W / exp.size[0])), Image.LANCZOS)
+        ref = Image.open(quadros[escolhidos[0]]).convert('RGB').resize((90, 160))
+        dy = min(range(exp.size[1] - H + 1),
+                 key=lambda t: sum(ImageStat.Stat(ImageChops.difference(exp.crop((0, t, W, t + H)).resize((90, 160)), ref)).mean))
+        poster = normalizar(exp.crop((0, dy, W, dy + H)), suav[0])
+        poster.resize(TAM_MOBILE, Image.LANCZOS).save(os.path.join(PASTA, 'explodido-poster.webp'), 'WEBP', quality=78, method=6)
+
+    print(f'{N} frames salvos. Use {hexa} como fundo da seção (styles.css e js/bolo.js).')
 
 
 if __name__ == '__main__':

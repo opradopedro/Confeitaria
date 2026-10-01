@@ -1,38 +1,43 @@
 /* =========================================================================
-   Amorino — bolo montado conforme o scroll, com frames reais (WebP).
-   Os frames são gerados a partir dos vídeos em img/bolo/video/ pelo script
-   scripts/gerar-frames.py. Para trocar a animação, gere novos frames e
-   ajuste FRAMES abaixo (e os data-start/data-end dos cartões no index.html).
+   Amorino — "bolo desconstruído": as camadas do Bolo de Maracujá começam
+   separadas e se juntam conforme a rolagem. Frames WebP gerados a partir de
+   img/bolo-maracuja/montagem.mp4 por scripts/gerar-frames.py (o vídeo não é
+   carregado pelo site).
    ========================================================================= */
 (function () {
   const BOLO = {
-    frames: 150,                          // quantidade de frames em cada pasta
-    pasta: 'img/bolo/frames',             // frames para telas grandes (1280×720)
-    pastaMobile: 'img/bolo/frames-mobile',// frames para telas pequenas (640×500, só a faixa do bolo)
-    inicio: 0.05,                         // progresso do scroll em que a animação começa…
-    fim: 0.84,                            // …e termina (depois disso fica no bolo pronto)
-    fundo: '#EFDCC0',                     // cor do fundo das imagens
-    // Celular (tela em pé): largura do bolo na tela e altura do centro do frame
-    larguraBoloMobile: 0.6,               // o bolo ocupa ~60% da largura da tela
-    centroMobile: 0.36,                   // centro do frame a 36% da altura (acima dos cartões)
+    frames: 120,                                    // quantidade de frames em cada pasta
+    pasta: 'img/bolo-maracuja/frames',              // telas grandes (720×1280)
+    pastaMobile: 'img/bolo-maracuja/frames-mobile', // telas pequenas (432×768)
+    fundo: '#DABFAD',                               // cor real do fundo dos frames
+    // trechos do progresso da seção (0 = topo, 1 = fim)
+    animacao: [0.0, 0.82],   // 0% bolo explodido → 82% bolo montado (o resto fica parado no montado)
+    rotulos: [0.04, 0.42],   // rótulos das camadas somem nesse intervalo
+    intro: [0.0, 0.18],      // texto de abertura some
+    final: [0.78, 0.92],     // texto do bolo + botão de encomenda aparece
   };
-  // Fração da largura do frame ocupada pelo bolo (boleira) em cada versão dos frames
-  const BOLO_NO_FRAME = { desktop: 0.36, mobile: 0.5 };
 
-  const canvas = document.getElementById('cake-canvas');
-  const stage = document.querySelector('.stage');
-  const build = document.querySelector('.build');
-  const loader = document.getElementById('loader');
-  if (!canvas || !build) return;
+  const section = document.querySelector('.desc');
+  const canvas = document.getElementById('bolo-canvas');
+  const visual = document.getElementById('desc-visual');
+  const poster = document.getElementById('desc-poster');
+  const intro = document.getElementById('desc-intro');
+  const final = document.getElementById('desc-final');
+  const labels = [...document.querySelectorAll('.desc__label')];
+  if (!section || !canvas) return;
   const ctx = canvas.getContext('2d');
 
   const mobile = window.matchMedia('(max-width: 820px)').matches;
   const pasta = mobile ? BOLO.pastaMobile : BOLO.pasta;
   const src = (i) => `${pasta}/frame-${String(i + 1).padStart(3, '0')}.webp`;
 
+  const clamp01 = (v) => Math.min(1, Math.max(0, v));
+  const seg = (p, [a, b]) => clamp01((p - a) / (b - a));
+  const smooth = (t) => t * t * (3 - 2 * t);
+
   /* ----------------------------- preload --------------------------------- */
-  // Ordem de carregamento: primeiro e último, depois um a cada 8, 4, 2 e o resto —
-  // assim dá para rolar cedo, mostrando o frame carregado mais próximo.
+  // Primeiro e último frame, depois um a cada 8, 4, 2 e o resto: dá para rolar
+  // cedo (mostrando o frame carregado mais próximo). O poster cobre a espera.
   const images = new Array(BOLO.frames);
   const ready = new Array(BOLO.frames).fill(false);
   const order = [];
@@ -42,9 +47,8 @@
   for (const step of [8, 4, 2, 1]) for (let i = 0; i < BOLO.frames; i += step) push(i);
 
   let loading = 0;
-  const MAX_PARALLEL = 6;
   function next() {
-    while (loading < MAX_PARALLEL && order.length) {
+    while (loading < 6 && order.length) {
       const i = order.shift();
       const img = new Image();
       img.decoding = 'async';
@@ -54,8 +58,8 @@
         const done = () => {
           loading--;
           ready[i] = true;
-          if (i === 0) loader.classList.add('is-done');
           draw(true);
+          if (i === 0) poster.classList.add('is-hidden');
           next();
         };
         (img.decode ? img.decode() : Promise.resolve()).then(done, done);
@@ -65,7 +69,6 @@
       images[i] = img;
     }
   }
-  next();
 
   function nearest(i) {
     if (ready[i]) return i;
@@ -77,35 +80,19 @@
   }
 
   /* ----------------------------- desenho ---------------------------------- */
+  // O canvas tem a mesma proporção do vídeo (9:16): o frame ocupa o canvas todo.
   let W = 0, H = 0, dpr = 1;
   function resize() {
-    // no celular, até 1,5× de densidade: mais leve para desenhar a cada quadro
     dpr = Math.min(window.devicePixelRatio || 1, mobile ? 1.5 : 2);
-    W = stage.clientWidth;
-    H = stage.clientHeight;
+    W = visual.clientWidth;
+    H = visual.clientHeight;
     canvas.width = Math.round(W * dpr);
     canvas.height = Math.round(H * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'medium';
     draw(true);
-  }
-
-  function geometry(img) {
-    const iw = img.naturalWidth, ih = img.naturalHeight;
-    const portrait = W / H < 0.9;
-    const visibleH = window.innerHeight || H;
-    if (portrait) {
-      // o bolo ocupa BOLO.larguraBoloMobile da tela, acima dos cartões
-      const frac = mobile ? BOLO_NO_FRAME.mobile : BOLO_NO_FRAME.desktop;
-      const scale = (W * BOLO.larguraBoloMobile) / (iw * frac);
-      const dw = iw * scale, dh = ih * scale;
-      return [(W - dw) / 2, visibleH * BOLO.centroMobile - dh / 2, dw, dh];
-    }
-    // paisagem: o frame ocupa ~90% da altura (sobra espaço para os cartões laterais)
-    const scale = Math.max((H * 0.9) / ih, (W * 0.9) / iw);
-    const dw = iw * scale, dh = ih * scale;
-    return [(W - dw) / 2, (H - dh) / 2, dw, dh];
+    updateUI();
   }
 
   // Desenha a posição fracionária: o frame atual e, por cima, o próximo com
@@ -116,75 +103,71 @@
     if (a < 0) return;
     if (!force && Math.abs(pos - drawnPos) < 0.02) return;
     drawnPos = pos;
-    const g = geometry(images[a]);
     ctx.globalAlpha = 1;
     ctx.fillStyle = BOLO.fundo;
     ctx.fillRect(0, 0, W, H);
-    ctx.drawImage(images[a], g[0], g[1], g[2], g[3]);
+    ctx.drawImage(images[a], 0, 0, W, H);
     const b = a + 1;
     const t = pos - a;
     if (a === Math.floor(pos) && t > 0.02 && b < BOLO.frames && ready[b]) {
       ctx.globalAlpha = Math.min(1, t);
-      ctx.drawImage(images[b], g[0], g[1], g[2], g[3]);
+      ctx.drawImage(images[b], 0, 0, W, H);
       ctx.globalAlpha = 1;
     }
   }
 
+  /* ----------------------------- textos ----------------------------------- */
+  function fade(el, k, dy) {
+    el.style.opacity = String(k);
+    el.style.transform = `translateY(${(1 - k) * dy}px)`;
+    el.style.visibility = k <= 0.001 ? 'hidden' : 'visible';
+  }
+
+  function updateUI() {
+    const p = smoothP;
+    const montagem = seg(p, BOLO.animacao);
+    // rótulos acompanham a altura da camada (do explodido ao montado) e somem aos poucos
+    const kl = 1 - smooth(seg(p, BOLO.rotulos));
+    for (const li of labels) {
+      const y = (+li.dataset.y0 + (+li.dataset.y1 - +li.dataset.y0) * montagem) * H;
+      const side = li.classList.contains('desc__label--left') ? 1 : -1;
+      li.style.transform = `translate(${side * (1 - kl) * 24}px, ${y}px) translateY(-50%)`;
+      li.style.opacity = String(kl);
+      li.style.visibility = kl <= 0.001 ? 'hidden' : 'visible';
+    }
+    fade(intro, 1 - smooth(seg(p, BOLO.intro)), -40);
+    fade(final, smooth(seg(p, BOLO.final)), 30);
+  }
+
   /* ----------------------------- scroll ----------------------------------- */
-  const clamp01 = (v) => Math.min(1, Math.max(0, v));
   function progress() {
-    const rect = build.getBoundingClientRect();
-    const total = build.offsetHeight - window.innerHeight;
+    const rect = section.getBoundingClientRect();
+    const total = section.offsetHeight - window.innerHeight;
     return clamp01(-rect.top / Math.max(total, 1));
   }
-  // posição fracionária no vídeo (0 … frames-1)
-  const frameAt = (p) => clamp01((p - BOLO.inicio) / (BOLO.fim - BOLO.inicio)) * (BOLO.frames - 1);
+  const frameAt = (p) => seg(p, BOLO.animacao) * (BOLO.frames - 1);
 
-  // Cartões de cada etapa, trilho lateral e cartão de abertura
-  const steps = [...document.querySelectorAll('.step')];
-  const hero = document.querySelector('.step--hero');
-  const rail = document.querySelector('.rail');
-  const railItems = [...document.querySelectorAll('.rail li')];
-  function updateUI(p) {
-    // o cartão de abertura sobe e some aos poucos conforme a rolagem
-    const k = clamp01(p / 0.045);
-    hero.style.opacity = String(1 - k);
-    hero.style.transform = `translate(-50%, ${-k * 90}px)`;
-    hero.style.visibility = k >= 1 ? 'hidden' : 'visible';
-    for (const s of steps) {
-      if (s === hero) continue;
-      s.classList.toggle('is-active', p >= parseFloat(s.dataset.start) && p < parseFloat(s.dataset.end));
-    }
-    let cur = -1;
-    railItems.forEach((li, i) => { if (p >= parseFloat(li.dataset.at)) cur = i; });
-    railItems.forEach((li, i) => {
-      li.classList.toggle('is-done', i < cur);
-      li.classList.toggle('is-current', i === cur);
-    });
-    rail.classList.toggle('is-hidden', p < 0.04 || p > 0.9);
-  }
-
-  // Suaviza a rolagem e só redesenha quando o frame muda.
+  // Suaviza a rolagem e só redesenha quando a posição muda.
   let target = progress();
-  let smooth = target;
-  let pos = frameAt(smooth);
+  let smoothP = target;
+  let pos = frameAt(smoothP);
   let ticking = false;
   function tick() {
-    smooth += (target - smooth) * 0.25;
-    if (Math.abs(target - smooth) < 0.00005) smooth = target;
-    pos = frameAt(smooth);
+    smoothP += (target - smoothP) * 0.25;
+    if (Math.abs(target - smoothP) < 0.00005) smoothP = target;
+    pos = frameAt(smoothP);
     draw(false);
-    if (smooth !== target) requestAnimationFrame(tick);
+    updateUI();
+    if (smoothP !== target) requestAnimationFrame(tick);
     else ticking = false;
   }
   function onScroll() {
     target = progress();
-    updateUI(target);
     if (!ticking) { ticking = true; requestAnimationFrame(tick); }
   }
 
   window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('resize', resize);
   resize();
-  updateUI(target);
+  next();
 })();

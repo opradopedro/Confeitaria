@@ -1,6 +1,6 @@
 # Amorino Confeitaria
 
-Site da Amorino Confeitaria (São Caetano do Sul, SP). Um bolo de verdade é montado no centro da tela conforme o scroll: 4 discos de massa de chocolate intercalados com recheio rosa, branco e rosa. A animação é uma sequência de frames WebP (`img/bolo/frames/`, e `img/bolo/frames-mobile/` em telas pequenas) desenhada num `<canvas>` pelo `js/bolo.js`.
+Site da Amorino Confeitaria (São Caetano do Sul, SP). Na abertura, o Bolo de Maracujá aparece "desconstruído": as camadas (massa black, mousse de maracujá, calda com sementes) começam separadas e se juntam conforme o scroll. A animação é uma sequência de frames WebP (`img/bolo-maracuja/frames/`, e `img/bolo-maracuja/frames-mobile/` em telas pequenas) desenhada num `<canvas>` pelo `js/bolo.js`.
 
 Há um botão discreto "pular animação" para ir direto ao cardápio.
 
@@ -25,7 +25,7 @@ python3 -m http.server 8000
 - `index.html` — conteúdo da página
 - `styles.css` — identidade visual (marrom chocolate, creme, rosa e listras)
 - `js/bolo.js` — animação do bolo: preload dos frames e desenho no canvas conforme o scroll
-- `scripts/gerar-frames.py` — gera os frames a partir dos vídeos em `img/bolo/video/` (não usados pelo site)
+- `scripts/gerar-frames.py` — gera os frames a partir de `img/bolo-maracuja/montagem.mp4` (o vídeo não é usado pelo site)
 - `js/site.js` — links de WhatsApp, botão de pular, copiar chave PIX e montador de pedido
 - `img/` — logo e fotos extraídas do cardápio (WebP)
 
@@ -36,9 +36,9 @@ Ao alterar `styles.css` ou os arquivos em `js/`, aumente o número `?v=` nos lin
 
 ## Trocar a animação do bolo
 
-1. Coloque os vídeos em ordem em `img/bolo/video/` (`trecho-1.mp4`, `trecho-2.mp4`, …).
-2. Rode `python3 scripts/gerar-frames.py` (precisa de ffmpeg, Pillow e numpy). Ele corta os trechos parados
-   no início e no fim de cada vídeo, junta tudo, extrai os frames e ajusta o fundo para `#EFDCC0`.
-   O script imprime em que frames começa cada trecho.
-3. Se a quantidade de frames mudar, ajuste `BOLO.frames` em `js/bolo.js`, e ajuste os `data-start`/`data-end`
-   dos cartões no `index.html` para os novos trechos.
+1. Substitua `img/bolo-maracuja/montagem.mp4` (vídeo vertical 9:16 das camadas se juntando) e
+   `img/bolo-maracuja/explodido.jpg` (primeiro quadro, usado enquanto carrega).
+2. Rode `python3 scripts/gerar-frames.py` (precisa de ffmpeg, Pillow e numpy). Ele corta os trechos parados,
+   escolhe os frames pelo movimento (sem "travar" no meio), mede a cor do fundo e normaliza os frames para ela.
+3. Se a cor do fundo impressa mudar, troque `#DABFAD` em `styles.css` (`.desc`) e `BOLO.fundo` em `js/bolo.js`.
+   As alturas dos rótulos ficam nos `data-y0`/`data-y1` do `index.html`.

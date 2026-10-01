@@ -20,7 +20,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
 // Botão discreto para pular a animação do bolo
 (function skipButton() {
   const skip = document.getElementById('skip');
-  const build = document.querySelector('.build');
+  const build = document.querySelector('.desc');
   if (!skip || !build) return;
   skip.addEventListener('click', (e) => {
     e.preventDefault();
