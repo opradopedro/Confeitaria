@@ -130,8 +130,7 @@ function crumbTextures({ seed, base, dark, light, W = 1024, H = 512, pores = 260
 }
 
 // Creme liso com pintinhas (pedacinhos de fruta, etc.) e marcas de espátula.
-function creamTextures({ seed, base, tint, specks = [], streaks = 0.12 }) {
-  const W = 1024, H = 256;
+function creamTextures({ seed, base, tint, specks = [], streaks = 0.12, W = 1024, H = 256 }) {
   const [c, g] = makeCanvas(W, H);
   const [b, gb] = makeCanvas(W, H);
   const R = rng(seed);
@@ -313,8 +312,15 @@ const spongeTopTex = crumbTextures({ seed: 42, base: '#5a3320', dark: '#241109',
 // proporção certa dos poros: a lateral tem ~6,3 de volta por 0,34 de altura
 for (const t of [spongeTex.map, spongeTex.bump]) t.repeat.set(9, 1);
 for (const t of [spongeTopTex.map, spongeTopTex.bump]) t.repeat.set(2, 2);
-const pinkTex = creamTextures({ seed: 3, base: '#eaa4b0', tint: '#c9566d', specks: [{ color: '#b2263f', size: 4, count: 260 }, { color: '#fff1ef', size: 2, count: 300 }] });
-const whiteTex = creamTextures({ seed: 8, base: '#f5ecd9', tint: '#d9c39b', specks: [{ color: '#fffaf0', size: 2, count: 400 }] });
+// Lateral do recheio: textura repetida ao redor (≈ 6,3 de volta por 0,16 de altura) para não esticar.
+const pinkSpecks = [{ color: '#b2263f', size: 4, count: 260 }, { color: '#fff1ef', size: 2, count: 300 }];
+const whiteSpecks = [{ color: '#fffaf0', size: 2, count: 400 }];
+const pinkTex = creamTextures({ seed: 3, base: '#eaa4b0', tint: '#c9566d', specks: pinkSpecks });
+const whiteTex = creamTextures({ seed: 8, base: '#f5ecd9', tint: '#d9c39b', specks: whiteSpecks });
+// Topo do recheio: mapeamento plano, quase sem marcas de espátula.
+const pinkCapTex = creamTextures({ seed: 4, base: '#eaa4b0', tint: '#c9566d', specks: pinkSpecks, streaks: 0.03, W: 512, H: 512 });
+const whiteCapTex = creamTextures({ seed: 9, base: '#f5ecd9', tint: '#d9c39b', specks: whiteSpecks, streaks: 0.03, W: 512, H: 512 });
+for (const t of [pinkTex.map, pinkTex.bump, whiteTex.map, whiteTex.bump]) t.repeat.set(4, 1);
 const chantBump = spatulaBump();
 console.log(`textures ${Math.round(performance.now() - t0)}ms`);
 const wood = woodTextures();
@@ -323,8 +329,8 @@ const berry = strawberryTexture();
 const M = {
   spongeSide: new THREE.MeshStandardMaterial({ map: spongeTex.map, bumpMap: spongeTex.bump, bumpScale: 3, roughness: 0.92 }),
   spongeCap: new THREE.MeshStandardMaterial({ map: spongeTopTex.map, bumpMap: spongeTopTex.bump, bumpScale: 3, roughness: 0.92 }),
-  pink: new THREE.MeshPhysicalMaterial({ map: pinkTex.map, bumpMap: pinkTex.bump, bumpScale: 1.2, roughness: 0.45, clearcoat: 0.25, clearcoatRoughness: 0.45, sheen: 0.4, sheenColor: new THREE.Color('#ffd6de') }),
-  white: new THREE.MeshPhysicalMaterial({ map: whiteTex.map, bumpMap: whiteTex.bump, bumpScale: 1.2, roughness: 0.5, clearcoat: 0.15, clearcoatRoughness: 0.5, sheen: 0.5, sheenColor: new THREE.Color('#fffaf0') }),
+  pink: [pinkTex, pinkCapTex, pinkCapTex].map((t) => new THREE.MeshPhysicalMaterial({ map: t.map, bumpMap: t.bump, bumpScale: 1.2, roughness: 0.45, clearcoat: 0.25, clearcoatRoughness: 0.45, sheen: 0.4, sheenColor: new THREE.Color('#ffd6de') })),
+  white: [whiteTex, whiteCapTex, whiteCapTex].map((t) => new THREE.MeshPhysicalMaterial({ map: t.map, bumpMap: t.bump, bumpScale: 1.2, roughness: 0.5, clearcoat: 0.15, clearcoatRoughness: 0.5, sheen: 0.5, sheenColor: new THREE.Color('#fffaf0') })),
   chantilly: new THREE.MeshPhysicalMaterial({ color: '#fbf6ee', bumpMap: chantBump, bumpScale: 1.4, roughness: 0.55, sheen: 0.6, sheenColor: new THREE.Color('#ffffff'), side: THREE.DoubleSide }),
   chantPink: new THREE.MeshPhysicalMaterial({ color: '#f1bcc6', roughness: 0.5, sheen: 0.5, sheenColor: new THREE.Color('#ffe4ea'), side: THREE.DoubleSide }),
   chantPiped: new THREE.MeshPhysicalMaterial({ color: '#fcf7ef', roughness: 0.5, sheen: 0.6, sheenColor: new THREE.Color('#ffffff'), side: THREE.DoubleSide }),
@@ -351,7 +357,7 @@ const M = {
 
 const R = 1.0;          // raio do bolo
 const LH = 0.34;        // altura de cada camada de massa
-const FH = 0.11;        // altura de cada recheio
+const FH = 0.16;        // altura de cada recheio
 const BASE = 0.03;      // espessura da base dourada
 const Y = {
   l1: BASE,
@@ -395,16 +401,23 @@ function spongeGeometry(seed) {
   return geo;
 }
 
+// Cilindro com a lateral levemente "estufada" (o recheio escapa um pouco entre as massas).
+// Usa as UVs do cilindro: topo com mapeamento plano, lateral ao redor — nada fica esticado.
 function fillingGeometry(h) {
-  const pts = [new THREE.Vector2(0, 0)];
-  const N = 18;
-  for (let i = 0; i <= N; i++) {
-    const t = i / N;
-    pts.push(new THREE.Vector2(R - 0.035 + 0.05 * Math.sin(Math.PI * t), t * h));
+  const geo = new THREE.CylinderGeometry(R, R, h, 160, 10);
+  const pos = geo.attributes.position;
+  const v = new THREE.Vector3();
+  for (let i = 0; i < pos.count; i++) {
+    v.fromBufferAttribute(pos, i);
+    const r = Math.hypot(v.x, v.z);
+    if (r < R * 0.999) continue;
+    const t = v.y / h + 0.5;
+    const n = (R - 0.03 + 0.055 * Math.sin(Math.PI * t)) / R;
+    pos.setXYZ(i, v.x * n, v.y, v.z * n);
   }
-  pts.push(new THREE.Vector2(R * 0.6, h + 0.004));
-  pts.push(new THREE.Vector2(0, h + 0.006));
-  return new THREE.LatheGeometry(pts, 160);
+  geo.translate(0, h / 2, 0);
+  geo.computeVertexNormals();
+  return geo;
 }
 
 // Roseta de chantilly feita com bico pitanga: tubo em espiral com seção em estrela.
@@ -1043,8 +1056,15 @@ const steps = [...document.querySelectorAll('.step')];
 const rail = document.querySelector('.rail');
 const railItems = [...document.querySelectorAll('.rail li')];
 
+const hero = document.querySelector('.step--hero');
 function updateUI(p) {
+  // o cartão de abertura sobe e some aos poucos conforme a rolagem
+  const k = clamp01(p / 0.045);
+  hero.style.opacity = String(1 - k);
+  hero.style.transform = `translate(-50%, ${-k * 90}px)`;
+  hero.style.visibility = k >= 1 ? 'hidden' : 'visible';
   for (const s of steps) {
+    if (s === hero) continue;
     const on = p >= parseFloat(s.dataset.start) && p < parseFloat(s.dataset.end);
     s.classList.toggle('is-active', on);
   }
