@@ -27,3 +27,8 @@ python3 -m http.server 8000
 - `js/cake.js` — cena 3D e animação ligada ao scroll (texturas geradas proceduralmente, sem imagens)
 - `js/site.js` — links de WhatsApp, botão de pular, copiar chave PIX e montador de pedido
 - `img/` — logo e fotos extraídas do cardápio (WebP)
+
+## Publicar atualizações (GitHub Pages)
+
+Ao alterar `styles.css` ou os arquivos em `js/`, aumente o número `?v=` nos links do `index.html`
+(ex.: `styles.css?v=3` → `styles.css?v=4`). Assim os navegadores baixam a versão nova em vez de usar a antiga do cache.
