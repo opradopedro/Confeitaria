@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Amorino Confeitaria — Uma doce dose de carinho</title>
+  <meta name="description" content="Amorino Confeitaria — bolos personalizados, recheios trufados e marmitinhas em São Caetano do Sul, SP. Encomende pelo WhatsApp.">
+  <meta name="theme-color" content="#4b2e1e">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,800&family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;1,600&family=Pacifico&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+
+  <header class="topbar">
+    <a href="#inicio" class="brand" aria-label="Amorino Confeitaria — início">
+      <span class="brand__badge"><span>Amorino</span></span>
+    </a>
+    <nav class="topbar__nav" aria-label="Principal">
+      <a href="#cardapio">Cardápio</a>
+      <a href="#marmitinhas">Marmitinhas</a>
+      <a href="#encomende">Encomende</a>
+      <a href="#" class="btn btn--small js-whatsapp">WhatsApp</a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ============ BOLO MONTADO NO SCROLL ============ -->
+    <section class="build" id="inicio" aria-label="Um bolo sendo montado enquanto você rola a página">
+      <div class="stage">
+        <canvas id="cake-canvas" aria-hidden="true"></canvas>
+
+        <div class="loader" id="loader">
+          <span class="loader__logo">Amorino</span>
+          <span class="loader__bar"><span></span></span>
+          <span class="loader__text">Pré-aquecendo o forno…</span>
+        </div>
+
+        <div class="no-webgl-msg">
+          <span class="loader__logo">Amorino</span>
+          <p>Seu navegador não conseguiu montar o bolo em 3D, mas o cardápio está logo abaixo.</p>
+        </div>
+
+        <!-- Cartões de cada etapa (ativados pelo progresso do scroll) -->
+        <div class="steps">
+          <article class="step step--hero" data-start="0" data-end="0.05">
+            <p class="eyebrow">Confeitaria · São Caetano do Sul, SP</p>
+            <h1 class="hero-logo">Amorino</h1>
+            <p class="hero-tagline">Uma doce dose de carinho</p>
+            <p class="scroll-hint"><span class="scroll-hint__mouse"></span>Role para montar o seu bolo</p>
+          </article>
+
+          <article class="step" data-start="0.06" data-end="0.155">
+            <span class="step__num">01</span>
+            <h2>A primeira camada</h2>
+            <p>Tudo começa com uma massa fofinha. Você escolhe o sabor:</p>
+            <ul class="chips">
+              <li>Branca</li><li>Chocolate</li><li>Limão</li><li>Canela</li><li>Cacau Black</li>
+            </ul>
+          </article>
+
+          <article class="step step--right" data-start="0.16" data-end="0.255">
+            <span class="step__num">02</span>
+            <h2>Recheio rosa</h2>
+            <p>Uma camada generosa de recheio de frutas, espalhada até a borda.</p>
+            <ul class="chips chips--pink">
+              <li>Morango</li><li>Frutas vermelhas</li><li>Uva</li><li>Abacaxi</li><li>Ameixa</li>
+            </ul>
+            <p class="price">Recheios frutas · <strong>R$ 105/kg</strong></p>
+          </article>
+
+          <article class="step" data-start="0.26" data-end="0.355">
+            <span class="step__num">03</span>
+            <h2>Mais uma camada</h2>
+            <p>Porque bolo bom é bolo alto. Massa por cima, bem nivelada.</p>
+          </article>
+
+          <article class="step step--right" data-start="0.36" data-end="0.455">
+            <span class="step__num">04</span>
+            <h2>Recheio branco</h2>
+            <p>Agora o cremoso: brigadeiro branco trufado, leite ninho, coco, doce de leite…</p>
+            <p class="price">Recheios únicos · <strong>R$ 95/kg</strong><br>Recheios trufados · <strong>R$ 115/kg</strong></p>
+          </article>
+
+          <article class="step" data-start="0.46" data-end="0.555">
+            <span class="step__num">05</span>
+            <h2>A camada final</h2>
+            <p>Três andares de massa. Escolha o tamanho certo para a sua festa:</p>
+            <ul class="sizes-mini">
+              <li><b>P</b> 1,5 kg · 10–15 fatias</li>
+              <li><b>M</b> 2 kg · 15–20 fatias</li>
+              <li><b>G</b> 3 kg · 25–30 fatias</li>
+            </ul>
+          </article>
+
+          <article class="step step--right" data-start="0.56" data-end="0.69">
+            <span class="step__num">06</span>
+            <h2>Chantilly na lateral</h2>
+            <p>Espátula na mão: o chantilly passa por toda a volta e deixa o bolo lisinho.</p>
+          </article>
+
+          <article class="step" data-start="0.70" data-end="0.855">
+            <span class="step__num">07</span>
+            <h2>A decoração</h2>
+            <p>Ganache escorrendo, rosetas de chantilly, frutas e granulado.</p>
+            <p class="note"><strong>Inspirações são super bem-vindas!</strong> Conte pra gente seu tema favorito e desenvolvemos juntas a sua decoração.</p>
+          </article>
+
+          <article class="step step--final" data-start="0.88" data-end="1.01">
+            <h2>Pronto pra festa.</h2>
+            <p>Do forno pra sua mesa, com uma doce dose de carinho.</p>
+            <div class="btn-row">
+              <a href="#encomende" class="btn">Montar meu pedido</a>
+              <a href="#cardapio" class="btn btn--ghost">Ver cardápio</a>
+            </div>
+          </article>
+        </div>
+
+        <ol class="rail" aria-hidden="true">
+          <li data-at="0.06">Massa</li>
+          <li data-at="0.16">Recheio rosa</li>
+          <li data-at="0.26">Massa</li>
+          <li data-at="0.36">Recheio branco</li>
+          <li data-at="0.46">Massa</li>
+          <li data-at="0.56">Chantilly</li>
+          <li data-at="0.70">Decoração</li>
+          <li data-at="0.88">Na mesa</li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ============ CARDÁPIO ============ -->
+    <section class="section section--cream" id="cardapio">
+      <div class="drip-head">
+        <h2 class="drip-title">Escolha o<br>tamanho</h2>
+        <svg class="drip" viewBox="0 0 1200 120" preserveAspectRatio="none" aria-hidden="true"><path/></svg>
+      </div>
+
+      <div class="container">
+        <div class="sizes">
+          <article class="size-card">
+            <span class="size-tag">P</span>
+            <div class="size-cake size-cake--p" aria-hidden="true"></div>
+            <h3>1,5 kg</h3>
+            <p>10 a 15 fatias</p>
+          </article>
+          <article class="size-card">
+            <span class="size-tag">M</span>
+            <div class="size-cake size-cake--m" aria-hidden="true"></div>
+            <h3>2 kg</h3>
+            <p>15 a 20 fatias</p>
+          </article>
+          <article class="size-card">
+            <span class="size-tag">G</span>
+            <div class="size-cake size-cake--g" aria-hidden="true"></div>
+            <h3>3 kg</h3>
+            <p>25 a 30 fatias</p>
+          </article>
+        </div>
+        <p class="center muted">Acima de 4 kg serão feitos dois bolos. Para mais informações, consulte pelo WhatsApp.</p>
+
+        <h3 class="sub-title">Massas</h3>
+        <ul class="chips chips--center">
+          <li>Branca</li><li>Chocolate</li><li>Limão</li><li>Canela</li><li>Cacau Black</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section section--pink">
+      <div class="drip-head">
+        <h2 class="drip-title">Escolha o<br>recheio</h2>
+        <svg class="drip" viewBox="0 0 1200 120" preserveAspectRatio="none" aria-hidden="true"><path/></svg>
+      </div>
+
+      <div class="container">
+        <div class="menu-grid">
+          <article class="menu-card">
+            <h3>Recheios únicos</h3>
+            <p class="menu-price">R$ 95,00/kg</p>
+            <ul><li>Brigadeiro</li><li>Doce de leite</li><li>Leite ninho</li><li>Paçoca</li><li>Bicho de pé</li><li>Coco</li></ul>
+          </article>
+          <article class="menu-card">
+            <h3>Recheios frutas</h3>
+            <p class="menu-price">R$ 105,00/kg</p>
+            <ul><li>Uva</li><li>Abacaxi</li><li>Morango</li><li>Ameixa</li></ul>
+          </article>
+          <article class="menu-card">
+            <h3>Recheios trufados</h3>
+            <p class="menu-price">R$ 115,00/kg</p>
+            <ul><li>Brigadeiro ao leite trufado</li><li>Brigadeiro branco trufado</li><li>Maracujá trufado</li></ul>
+          </article>
+          <article class="menu-card">
+            <h3>Recheios geleias</h3>
+            <p class="menu-price">R$ 115,00/kg</p>
+            <ul><li>Morango</li><li>Frutas vermelhas</li></ul>
+          </article>
+          <article class="menu-card menu-card--feature">
+            <h3>Red Velvet</h3>
+            <p class="menu-price">R$ 125,00/kg</p>
+            <ul><li>Brigadeiro de chocolate branco</li><li>Cream cheese</li></ul>
+            <p class="menu-extra">*Com geleia: acréscimo de R$ 15,00/kg</p>
+          </article>
+        </div>
+        <p class="center muted"><em>Obs. Sabores que não estão no cardápio, consultar via WhatsApp.</em></p>
+      </div>
+    </section>
+
+    <section class="section section--cream">
+      <div class="drip-head">
+        <h2 class="drip-title">Escolha a<br>decoração</h2>
+        <svg class="drip" viewBox="0 0 1200 120" preserveAspectRatio="none" aria-hidden="true"><path/></svg>
+      </div>
+      <div class="container narrow center">
+        <p class="big-italic">Inspirações são super bem-vindas!</p>
+        <p class="lead">Conte pra gente qual seu tema favorito e podemos desenvolver juntas a sua decoração.</p>
+        <a href="#" class="btn js-whatsapp" data-msg="Oi, Amorino! Queria conversar sobre a decoração do meu bolo 🤍">Encomende via WhatsApp 🤍</a>
+      </div>
+    </section>
+
+    <!-- ============ MARMITINHAS ============ -->
+    <section class="section section--butter" id="marmitinhas">
+      <div class="marmita">
+        <div class="marmita__words" aria-hidden="true">
+          <span>MARMITINHAS</span><span>MARMITINHAS</span><span>MARMITINHAS</span>
+          <span>MARMITINHAS</span><span>MARMITINHAS</span><span>MARMITINHAS</span>
+        </div>
+        <div class="marmita__tray" aria-hidden="true">
+          <div class="tray">
+            <div class="tray__top"></div>
+            <div class="tray__ribbon tray__ribbon--h"></div>
+            <div class="tray__ribbon tray__ribbon--v"></div>
+            <div class="tray__bow"><span></span><span></span></div>
+            <div class="tray__label"><small>CONFEITARIA</small><b>Amorino</b><small>doces de carinho</small></div>
+          </div>
+        </div>
+      </div>
+      <h2 class="visually-hidden">Marmitinhas</h2>
+      <p class="marmita__text">Uma opção prática e deliciosa para levar para comemorações, encontros em bares ou rolê com os amigos!</p>
+      <div class="center"><a href="#" class="btn js-whatsapp" data-msg="Oi, Amorino! Quero saber mais sobre as marmitinhas 🍫">Quero uma marmitinha</a></div>
+    </section>
+
+    <!-- ============ MONTE SEU PEDIDO ============ -->
+    <section class="section section--choco" id="encomende">
+      <div class="container">
+        <h2 class="section-title section-title--light">Monte seu pedido</h2>
+        <p class="center lead lead--light">Escolha tudo aqui e mande direto pro nosso WhatsApp. A gente confirma valores, data e decoração com você.</p>
+
+        <form class="order" id="order-form">
+          <fieldset class="order__group">
+            <legend>Tamanho</legend>
+            <div class="seg">
+              <label><input type="radio" name="size" value="1.5" data-label="P (1,5 kg · 10–15 fatias)" checked><span><b>P</b>1,5 kg</span></label>
+              <label><input type="radio" name="size" value="2" data-label="M (2 kg · 15–20 fatias)"><span><b>M</b>2 kg</span></label>
+              <label><input type="radio" name="size" value="3" data-label="G (3 kg · 25–30 fatias)"><span><b>G</b>3 kg</span></label>
+            </div>
+          </fieldset>
+
+          <div class="order__row">
+            <label class="field">
+              <span>Massa</span>
+              <select name="massa" id="massa">
+                <option>Branca</option><option>Chocolate</option><option>Limão</option><option>Canela</option><option>Cacau Black</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>Recheio</span>
+              <select name="recheio" id="recheio">
+                <optgroup label="Únicos · R$ 95/kg">
+                  <option data-price="95">Brigadeiro</option>
+                  <option data-price="95">Doce de leite</option>
+                  <option data-price="95">Leite ninho</option>
+                  <option data-price="95">Paçoca</option>
+                  <option data-price="95">Bicho de pé</option>
+                  <option data-price="95">Coco</option>
+                </optgroup>
+                <optgroup label="Frutas · R$ 105/kg">
+                  <option data-price="105">Uva</option>
+                  <option data-price="105">Abacaxi</option>
+                  <option data-price="105">Morango</option>
+                  <option data-price="105">Ameixa</option>
+                </optgroup>
+                <optgroup label="Trufados · R$ 115/kg">
+                  <option data-price="115">Brigadeiro ao leite trufado</option>
+                  <option data-price="115">Brigadeiro branco trufado</option>
+                  <option data-price="115">Maracujá trufado</option>
+                </optgroup>
+                <optgroup label="Geleias · R$ 115/kg">
+                  <option data-price="115">Geleia de morango</option>
+                  <option data-price="115">Geleia de frutas vermelhas</option>
+                </optgroup>
+                <optgroup label="Red Velvet · R$ 125/kg">
+                  <option data-price="125" data-rv="1">Red Velvet · Brigadeiro de chocolate branco</option>
+                  <option data-price="125" data-rv="1">Red Velvet · Cream cheese</option>
+                </optgroup>
+              </select>
+            </label>
+          </div>
+
+          <label class="check" id="geleia-wrap" hidden>
+            <input type="checkbox" name="geleia" id="geleia">
+            <span>Adicionar geleia (+ R$ 15,00/kg)</span>
+          </label>
+
+          <div class="order__row">
+            <label class="field">
+              <span>Para quando?</span>
+              <input type="date" name="data" id="data">
+            </label>
+            <label class="field">
+              <span>Seu nome</span>
+              <input type="text" name="nome" id="nome" placeholder="Como podemos te chamar?" autocomplete="name">
+            </label>
+          </div>
+
+          <label class="field">
+            <span>Tema / ideia de decoração</span>
+            <textarea name="tema" id="tema" rows="3" placeholder="Ex.: aniversário de 30 anos, tons de rosa, com morangos…"></textarea>
+          </label>
+
+          <div class="order__total">
+            <div>
+              <span class="order__total-label">Estimativa (sem decoração)</span>
+              <output id="total">R$ 142,50</output>
+            </div>
+            <button type="submit" class="btn btn--cream">Enviar pelo WhatsApp</button>
+          </div>
+          <p class="order__fine">Valor estimado a partir do preço por kg do recheio. O valor final é confirmado pelo WhatsApp.</p>
+        </form>
+      </div>
+    </section>
+
+    <!-- ============ E MUITO MAIS ============ -->
+    <section class="section section--stripes" id="mais">
+      <div class="more">
+        <p class="eyebrow">E muito mais…</p>
+        <h2>Isso é só um pedacinho.</h2>
+        <p>Tem muito mais docinho, bolo e novidade esperando por você no nosso Instagram.</p>
+        <a class="btn js-instagram" href="https://www.instagram.com/amorinoconfeitaria_/" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 2.2c3.2 0 3.6 0 4.8.1 3.3.1 4.8 1.7 4.9 4.9.1 1.3.1 1.6.1 4.8s0 3.6-.1 4.8c-.1 3.2-1.7 4.8-4.9 4.9-1.3.1-1.6.1-4.8.1s-3.6 0-4.8-.1c-3.3-.1-4.8-1.7-4.9-4.9C2.2 15.6 2.2 15.2 2.2 12s0-3.6.1-4.8C2.4 3.9 3.9 2.4 7.2 2.3 8.4 2.2 8.8 2.2 12 2.2zM12 0C8.7 0 8.3 0 7.1.1 2.7.3.3 2.7.1 7.1 0 8.3 0 8.7 0 12s0 3.7.1 4.9c.2 4.4 2.6 6.8 7 7 1.2.1 1.6.1 4.9.1s3.7 0 4.9-.1c4.4-.2 6.8-2.6 7-7 .1-1.2.1-1.6.1-4.9s0-3.7-.1-4.9c-.2-4.4-2.6-6.8-7-7C15.7 0 15.3 0 12 0zm0 5.8a6.2 6.2 0 1 0 0 12.4 6.2 6.2 0 0 0 0-12.4zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.4-11.8a1.4 1.4 0 1 0 0 2.9 1.4 1.4 0 0 0 0-2.9z"/></svg>
+          @amorinoconfeitaria_
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer__logo"><span>Amorino</span></div>
+    <p class="footer__tag">Uma doce dose de carinho 🤍</p>
+    <p>São Caetano do Sul, São Paulo.</p>
+    <div class="footer__links">
+      <a href="https://www.instagram.com/amorinoconfeitaria_/" target="_blank" rel="noopener">Instagram</a>
+      <a href="#" class="js-whatsapp">WhatsApp</a>
+    </div>
+    <p class="footer__fine">© <span id="year"></span> Amorino Confeitaria</p>
+  </footer>
+
+  <script src="js/site.js"></script>
+  <script type="module" src="js/cake.js"></script>
+</body>
+</html>
