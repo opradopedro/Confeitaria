@@ -116,7 +116,7 @@ p { margin: 0 0 1em; }
 
 /* ---------- Bolo desconstruído (camadas se juntam com o scroll) ---------- */
 /* #DABFAD = cor real do fundo dos frames (medida e normalizada por scripts/gerar-frames.py) */
-.desc { position: relative; height: 300vh; background: #dabfad; }
+.desc { position: relative; height: 260vh; background: #dabfad; }
 .desc__stage {
   position: sticky; top: 0;
   /* lvh: ao esconder a barra do navegador no celular não aparece buraco embaixo */
@@ -131,7 +131,7 @@ p { margin: 0 0 1em; }
   gap: clamp(24px, 5vw, 80px);
   padding: 96px 0 24px;
 }
-.desc__text { position: relative; display: grid; }
+.desc__text { position: relative; display: grid; align-items: center; }
 .desc__intro, .desc__final { grid-area: 1 / 1; will-change: opacity, transform; }
 .desc__final { opacity: 0; visibility: hidden; }
 .desc__logo { width: min(300px, 60vw); margin: 0 0 6px; }
@@ -199,23 +199,26 @@ p { margin: 0 0 1em; }
 
 /* celular / tela em pé: o bolo ocupa a largura da tela e os textos ficam por cima */
 @media (max-width: 820px), (orientation: portrait) {
+  .desc { height: 220vh; }
   .desc__grid { display: block; width: 100%; padding: 0; position: relative; }
   .desc__visual {
     position: absolute; left: 0; right: 0; top: 0;
     width: 100%; height: auto; max-height: none; margin: 0;
   }
-  .desc__text { position: absolute; left: 16px; right: 16px; bottom: 16px; z-index: 2; }
+  /* cada cartão com a altura do próprio conteúdo, alinhados embaixo */
+  .desc__text { position: absolute; left: 16px; right: 16px; bottom: 16px; z-index: 2; align-items: end; }
   .desc__intro, .desc__final {
-    background: rgba(251, 251, 240, .88);
-    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    background: var(--cream); /* opaco: o bolo escuro não "vaza" atrás do logo */
     border-radius: 22px; padding: 18px 20px;
     box-shadow: 0 18px 50px -24px rgba(85, 40, 20, .45);
     text-align: center;
   }
-  .desc__logo { width: min(150px, 40vw); margin: 0 auto 2px; }
-  .desc__tagline { margin-bottom: 8px; font-size: 16px; }
+  .desc__logo { width: min(130px, 36vw); margin: 0 auto 2px; }
+  .desc__tagline { margin-bottom: 6px; font-size: 15px; }
+  .desc__intro .scroll-hint { font-size: 12px; }
+  .desc__intro .scroll-hint__mouse { width: 16px; height: 26px; }
   .desc__intro .eyebrow { margin-bottom: 6px; font-size: 10px; }
-  .desc__intro { padding: 14px 18px; }
+  .desc__intro { padding: 12px 16px; }
   .desc__title { font-size: clamp(34px, 10vw, 46px); }
   .desc__title span { display: inline; }
   .desc__lead { font-size: 15px; margin: 0 auto 14px; }

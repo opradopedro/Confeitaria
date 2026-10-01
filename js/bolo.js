@@ -11,10 +11,12 @@
     pastaMobile: 'img/bolo-maracuja/frames-mobile', // telas pequenas (432×768)
     fundo: '#DABFAD',                               // cor real do fundo dos frames
     // trechos do progresso da seção (0 = topo, 1 = fim)
-    animacao: [0.0, 0.82],   // 0% bolo explodido → 82% bolo montado (o resto fica parado no montado)
-    rotulos: [0.04, 0.42],   // rótulos das camadas somem nesse intervalo
-    intro: [0.0, 0.18],      // texto de abertura some
-    final: [0.78, 0.92],     // texto do bolo + botão de encomenda aparece
+    animacao: [0.0, 0.85],   // 0% bolo explodido → 85% bolo montado (o resto fica parado no montado)
+    // >1 adianta o começo (o vídeo original é lento no início) e desacelera no fim
+    aceleraInicio: 1.6,
+    rotulos: [0.03, 0.35],   // rótulos das camadas somem nesse intervalo
+    intro: [0.0, 0.15],      // texto de abertura some
+    final: [0.8, 0.93],      // texto do bolo + botão de encomenda aparece
   };
 
   const section = document.querySelector('.desc');
@@ -125,7 +127,7 @@
 
   function updateUI() {
     const p = smoothP;
-    const montagem = seg(p, BOLO.animacao);
+    const montagem = montagemAt(p);
     // rótulos acompanham a altura da camada (do explodido ao montado) e somem aos poucos
     const kl = 1 - smooth(seg(p, BOLO.rotulos));
     for (const li of labels) {
@@ -145,7 +147,9 @@
     const total = section.offsetHeight - window.innerHeight;
     return clamp01(-rect.top / Math.max(total, 1));
   }
-  const frameAt = (p) => seg(p, BOLO.animacao) * (BOLO.frames - 1);
+  // progresso da montagem (0 explodido … 1 montado), com início acelerado
+  const montagemAt = (p) => 1 - Math.pow(1 - seg(p, BOLO.animacao), BOLO.aceleraInicio);
+  const frameAt = (p) => montagemAt(p) * (BOLO.frames - 1);
 
   // Suaviza a rolagem e só redesenha quando a posição muda.
   let target = progress();
@@ -153,7 +157,7 @@
   let pos = frameAt(smoothP);
   let ticking = false;
   function tick() {
-    smoothP += (target - smoothP) * 0.25;
+    smoothP += (target - smoothP) * 0.35;
     if (Math.abs(target - smoothP) < 0.00005) smoothP = target;
     pos = frameAt(smoothP);
     draw(false);
