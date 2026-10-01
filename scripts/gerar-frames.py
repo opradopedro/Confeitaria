@@ -9,7 +9,7 @@ Passos:
   2. Junta os trechos cortados e escolhe --frames quadros igualmente espaçados.
   3. Ajusta o fundo para #EFDCC0 (normaliza o degradê/vinheta e o balanço de branco
      do vídeo, estimados nas laterais vazias de cada quadro) e esfuma as bordas nessa cor, para não haver emenda.
-  4. Salva img/bolo/frames/frame-001.webp… (1280×720) e img/bolo/frames-mobile/ (854×480).
+  4. Salva img/bolo/frames/frame-001.webp… (1280×720) e img/bolo/frames-mobile/ (640×500, só a faixa central do bolo).
 
 Requer: ffmpeg/ffprobe, Pillow e numpy (pip install pillow numpy).
 """
@@ -29,6 +29,8 @@ VIDEOS = os.path.join(RAIZ, 'img', 'bolo', 'video')
 SAIDA = os.path.join(RAIZ, 'img', 'bolo', 'frames')
 SAIDA_MOBILE = os.path.join(RAIZ, 'img', 'bolo', 'frames-mobile')
 FUNDO = np.array([0xEF, 0xDC, 0xC0], float)
+CORTE_MOBILE = (0.14, 0.86) # faixa horizontal do quadro usada no mobile (o bolo e sua sombra)
+TAM_MOBILE = (640, 500)     # 72% de 1280 × 720, reduzido
 
 
 def ffmpeg(*args):
@@ -109,6 +111,10 @@ def main():
             return t * t * (3 - 2 * t)
 
         borda = (rampa(X, 0.10) * rampa(1 - X, 0.10) * rampa(Y, 0.06) * rampa(1 - Y, 0.10))[..., None]
+        # Mobile: só a faixa central (o bolo), com bordas esfumadas próprias — mais leve
+        x0, x1 = round(W * CORTE_MOBILE[0]), round(W * CORTE_MOBILE[1])
+        Xm = (np.arange(x1 - x0)[None, :] + 0.5) / (x1 - x0)
+        borda_m = (rampa(Xm, 0.08) * rampa(1 - Xm, 0.08) * rampa(Y[:, :1], 0.06) * rampa(1 - Y[:, :1], 0.10))[..., None]
 
         # O vídeo muda o balanço de branco ao longo dos trechos: o fundo é estimado em
         # cada quadro e suavizado entre quadros vizinhos (evita "piscar").
@@ -122,12 +128,14 @@ def main():
             os.makedirs(pasta)
         for k, i in enumerate(escolhidos):
             modelo = np.stack([B @ c for c in suav[k]], -1)
-            im = np.asarray(Image.open(quadros[i]).convert('RGB'), float) * (FUNDO / modelo)
-            im = im * borda + FUNDO * (1 - borda)
-            img = Image.fromarray(np.clip(im + 0.5, 0, 255).astype('uint8'))
+            corr = np.asarray(Image.open(quadros[i]).convert('RGB'), float) * (FUNDO / modelo)
             nome = f'frame-{k + 1:03d}.webp'
+            im = corr * borda + FUNDO * (1 - borda)
+            img = Image.fromarray(np.clip(im + 0.5, 0, 255).astype('uint8'))
             img.resize((1280, 720), Image.LANCZOS).save(os.path.join(SAIDA, nome), 'WEBP', quality=80, method=6)
-            img.resize((854, 480), Image.LANCZOS).save(os.path.join(SAIDA_MOBILE, nome), 'WEBP', quality=74, method=6)
+            m = corr[:, x0:x1] * borda_m + FUNDO * (1 - borda_m)
+            img = Image.fromarray(np.clip(m + 0.5, 0, 255).astype('uint8'))
+            img.resize(TAM_MOBILE, Image.LANCZOS).save(os.path.join(SAIDA_MOBILE, nome), 'WEBP', quality=74, method=6)
 
     inicios = [1] + [round((f - 1) / (total - 1) * (N - 1)) + 1 for f in fins[:-1]]
     print(f'\n{N} frames salvos. Cada trecho começa no frame: {inicios}')

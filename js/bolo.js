@@ -8,11 +8,16 @@
   const BOLO = {
     frames: 150,                          // quantidade de frames em cada pasta
     pasta: 'img/bolo/frames',             // frames para telas grandes (1280×720)
-    pastaMobile: 'img/bolo/frames-mobile',// frames para telas pequenas (854×480)
+    pastaMobile: 'img/bolo/frames-mobile',// frames para telas pequenas (640×500, só a faixa do bolo)
     inicio: 0.05,                         // progresso do scroll em que a animação começa…
     fim: 0.84,                            // …e termina (depois disso fica no bolo pronto)
     fundo: '#EFDCC0',                     // cor do fundo das imagens
+    // Celular (tela em pé): largura do bolo na tela e altura do centro do frame
+    larguraBoloMobile: 0.6,               // o bolo ocupa ~60% da largura da tela
+    centroMobile: 0.36,                   // centro do frame a 36% da altura (acima dos cartões)
   };
+  // Fração da largura do frame ocupada pelo bolo (boleira) em cada versão dos frames
+  const BOLO_NO_FRAME = { desktop: 0.36, mobile: 0.5 };
 
   const canvas = document.getElementById('cake-canvas');
   const stage = document.querySelector('.stage');
@@ -45,11 +50,15 @@
       img.decoding = 'async';
       loading++;
       img.onload = () => {
-        loading--;
-        ready[i] = true;
-        if (i === 0) loader.classList.add('is-done');
-        if (i === nearest(current)) draw(true);
-        next();
+        // decodifica antes de usar: evita travadas ao desenhar durante a rolagem
+        const done = () => {
+          loading--;
+          ready[i] = true;
+          if (i === 0) loader.classList.add('is-done');
+          draw(true);
+          next();
+        };
+        (img.decode ? img.decode() : Promise.resolve()).then(done, done);
       };
       img.onerror = () => { loading--; next(); };
       img.src = src(i);
@@ -70,35 +79,55 @@
   /* ----------------------------- desenho ---------------------------------- */
   let W = 0, H = 0, dpr = 1;
   function resize() {
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    // no celular, até 1,5× de densidade: mais leve para desenhar a cada quadro
+    dpr = Math.min(window.devicePixelRatio || 1, mobile ? 1.5 : 2);
     W = stage.clientWidth;
     H = stage.clientHeight;
     canvas.width = Math.round(W * dpr);
     canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'medium';
     draw(true);
   }
 
-  let drawn = -1;
-  function draw(force) {
-    const i = nearest(current);
-    if (i < 0 || (!force && i === drawn)) return;
-    drawn = i;
-    const img = images[i];
+  function geometry(img) {
     const iw = img.naturalWidth, ih = img.naturalHeight;
     const portrait = W / H < 0.9;
-    // Paisagem: o frame ocupa ~90% da altura (sobra espaço para os cartões laterais).
-    // Retrato: o bolo (~36% da largura do frame) ocupa ~85% da tela, um pouco acima
-    // do centro (os cartões ficam embaixo). As bordas dos frames já são #EFDCC0.
-    const scale = portrait ? (W * 2.35) / iw : Math.max((H * 0.9) / ih, (W * 0.9) / iw);
-    const dw = iw * scale, dh = ih * scale;
     const visibleH = window.innerHeight || H;
-    const dx = (W - dw) / 2;
-    const dy = portrait ? visibleH * 0.4 - dh * 0.5 : (H - dh) / 2;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (portrait) {
+      // o bolo ocupa BOLO.larguraBoloMobile da tela, acima dos cartões
+      const frac = mobile ? BOLO_NO_FRAME.mobile : BOLO_NO_FRAME.desktop;
+      const scale = (W * BOLO.larguraBoloMobile) / (iw * frac);
+      const dw = iw * scale, dh = ih * scale;
+      return [(W - dw) / 2, visibleH * BOLO.centroMobile - dh / 2, dw, dh];
+    }
+    // paisagem: o frame ocupa ~90% da altura (sobra espaço para os cartões laterais)
+    const scale = Math.max((H * 0.9) / ih, (W * 0.9) / iw);
+    const dw = iw * scale, dh = ih * scale;
+    return [(W - dw) / 2, (H - dh) / 2, dw, dh];
+  }
+
+  // Desenha a posição fracionária: o frame atual e, por cima, o próximo com
+  // transparência proporcional — o movimento fica contínuo entre os frames.
+  let drawnPos = -1;
+  function draw(force) {
+    const a = nearest(Math.floor(pos));
+    if (a < 0) return;
+    if (!force && Math.abs(pos - drawnPos) < 0.02) return;
+    drawnPos = pos;
+    const g = geometry(images[a]);
+    ctx.globalAlpha = 1;
     ctx.fillStyle = BOLO.fundo;
     ctx.fillRect(0, 0, W, H);
-    ctx.imageSmoothingQuality = 'high';
-    ctx.drawImage(img, dx, dy, dw, dh);
+    ctx.drawImage(images[a], g[0], g[1], g[2], g[3]);
+    const b = a + 1;
+    const t = pos - a;
+    if (a === Math.floor(pos) && t > 0.02 && b < BOLO.frames && ready[b]) {
+      ctx.globalAlpha = Math.min(1, t);
+      ctx.drawImage(images[b], g[0], g[1], g[2], g[3]);
+      ctx.globalAlpha = 1;
+    }
   }
 
   /* ----------------------------- scroll ----------------------------------- */
@@ -108,7 +137,8 @@
     const total = build.offsetHeight - window.innerHeight;
     return clamp01(-rect.top / Math.max(total, 1));
   }
-  const frameAt = (p) => Math.round(clamp01((p - BOLO.inicio) / (BOLO.fim - BOLO.inicio)) * (BOLO.frames - 1));
+  // posição fracionária no vídeo (0 … frames-1)
+  const frameAt = (p) => clamp01((p - BOLO.inicio) / (BOLO.fim - BOLO.inicio)) * (BOLO.frames - 1);
 
   // Cartões de cada etapa, trilho lateral e cartão de abertura
   const steps = [...document.querySelectorAll('.step')];
@@ -137,12 +167,12 @@
   // Suaviza a rolagem e só redesenha quando o frame muda.
   let target = progress();
   let smooth = target;
-  let current = frameAt(smooth);
+  let pos = frameAt(smooth);
   let ticking = false;
   function tick() {
-    smooth += (target - smooth) * 0.2;
-    if (Math.abs(target - smooth) < 0.0002) smooth = target;
-    current = frameAt(smooth);
+    smooth += (target - smooth) * 0.25;
+    if (Math.abs(target - smooth) < 0.00005) smooth = target;
+    pos = frameAt(smooth);
     draw(false);
     if (smooth !== target) requestAnimationFrame(tick);
     else ticking = false;
