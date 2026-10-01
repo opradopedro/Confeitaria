@@ -107,12 +107,3 @@ document.querySelectorAll('[data-copy]').forEach((btn) => {
     window.open(whatsappUrl(lines.join('\n')), '_blank', 'noopener');
   });
 })();
-
-// Se o módulo 3D nem começar (CDN bloqueado, navegador antigo), mostra a versão simples.
-setTimeout(() => {
-  const loader = document.getElementById('loader');
-  if (loader && !window.__amorinoCake && !loader.classList.contains('is-done')) {
-    document.documentElement.classList.add('no-webgl');
-    loader.classList.add('is-done');
-  }
-}, 15000);

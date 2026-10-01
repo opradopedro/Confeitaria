@@ -10,15 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400..800,100&family=Lexend:wght@300;400;500;600;700&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=4">
-  <script type="importmap">
-    {
-      "imports": {
-        "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
-        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
-      }
-    }
-  </script>
+  <link rel="stylesheet" href="styles.css?v=5">
 </head>
 <body>
 
@@ -46,10 +38,6 @@
           <span class="loader__text">pré-aquecendo o forno…</span>
         </div>
 
-        <div class="no-webgl-msg">
-          <img class="loader__logo" src="img/logo-amorino.webp" alt="" width="900" height="433">
-          <p>Seu navegador não conseguiu montar o bolo em 3D, mas o cardápio está logo abaixo.</p>
-        </div>
 
         <!-- Cartões de cada etapa (ativados pelo progresso do scroll) -->
         <div class="steps">
@@ -60,7 +48,8 @@
             <p class="scroll-hint"><span class="scroll-hint__mouse"></span>Role para montar o seu bolo</p>
           </article>
 
-          <article class="step" data-start="0.06" data-end="0.155">
+          <!-- Janelas de scroll alinhadas aos trechos do vídeo (ver js/bolo.js) -->
+          <article class="step" data-start="0.055" data-end="0.16">
             <span class="step__num">01</span>
             <h2>A primeira camada</h2>
             <p>Tudo começa com uma massa fofinha. Você escolhe o sabor:</p>
@@ -69,7 +58,7 @@
             </ul>
           </article>
 
-          <article class="step step--right" data-start="0.16" data-end="0.255">
+          <article class="step step--right" data-start="0.165" data-end="0.275">
             <span class="step__num">02</span>
             <h2>Recheio rosa</h2>
             <p>Uma camada generosa de recheio de frutas, espalhada até a borda.</p>
@@ -79,23 +68,39 @@
             <p class="price">Recheios frutas · <strong>R$ 105/kg</strong></p>
           </article>
 
-          <article class="step" data-start="0.26" data-end="0.355">
+          <article class="step" data-start="0.28" data-end="0.385">
             <span class="step__num">03</span>
             <h2>Mais uma camada</h2>
             <p>Porque bolo bom é bolo alto. Massa por cima, bem nivelada.</p>
           </article>
 
-          <article class="step step--right" data-start="0.36" data-end="0.455">
+          <article class="step step--right" data-start="0.39" data-end="0.505">
             <span class="step__num">04</span>
             <h2>Recheio branco</h2>
             <p>Agora o cremoso: leite ninho, coco, brigadeiro branco trufado…</p>
             <p class="price">Recheios únicos · <strong>R$ 95/kg</strong><br>Recheios trufados · <strong>R$ 110/kg</strong></p>
           </article>
 
-          <article class="step" data-start="0.46" data-end="0.555">
+          <article class="step" data-start="0.51" data-end="0.585">
             <span class="step__num">05</span>
+            <h2>Terceira camada</h2>
+            <p>Mais massa de chocolate, alinhadinha com as de baixo.</p>
+          </article>
+
+          <article class="step step--right" data-start="0.59" data-end="0.715">
+            <span class="step__num">06</span>
+            <h2>Mais recheio</h2>
+            <p>Outra camada rosinha. Que tal uma geleia artesanal?</p>
+            <ul class="chips chips--pink">
+              <li>Morango</li><li>Frutas Vermelhas</li>
+            </ul>
+            <p class="price">Recheios geleias · <strong>R$ 115/kg</strong></p>
+          </article>
+
+          <article class="step" data-start="0.72" data-end="0.84">
+            <span class="step__num">07</span>
             <h2>A camada final</h2>
-            <p>Três andares de massa. Escolha o peso certo para a sua festa:</p>
+            <p>Quatro camadas de massa. Escolha o peso certo para a sua festa:</p>
             <ul class="sizes-mini">
               <li><b>P</b> 1,5 kg · 10 a 15 fatias</li>
               <li><b>M</b> 2 kg · 15 a 20 fatias</li>
@@ -103,20 +108,14 @@
             </ul>
           </article>
 
-          <article class="step step--right" data-start="0.56" data-end="0.69">
-            <span class="step__num">06</span>
-            <h2>Chantilly na lateral</h2>
-            <p>Espátula na mão: o chantilly passa por toda a volta e deixa o bolo lisinho.</p>
-          </article>
-
-          <article class="step" data-start="0.70" data-end="0.855">
-            <span class="step__num">07</span>
+          <article class="step step--right" data-start="0.845" data-end="0.905">
+            <span class="step__num">08</span>
             <h2>A decoração</h2>
             <p>Ganache escorrendo, rosetas de chantilly, frutas e granulado.</p>
             <p class="note">✨ <strong>Inspirações são super bem-vindas!</strong> ✨</p>
           </article>
 
-          <article class="step step--final" data-start="0.88" data-end="1.01">
+          <article class="step step--final" data-start="0.91" data-end="1.01">
             <h2>Pronto pra festa.</h2>
             <p>Do forno pra sua mesa, com uma doce dose de carinho.</p>
             <div class="btn-row">
@@ -127,14 +126,14 @@
         </div>
 
         <ol class="rail" aria-hidden="true">
-          <li data-at="0.06">Massa</li>
-          <li data-at="0.16">Recheio rosa</li>
-          <li data-at="0.26">Massa</li>
-          <li data-at="0.36">Recheio branco</li>
-          <li data-at="0.46">Massa</li>
-          <li data-at="0.56">Chantilly</li>
-          <li data-at="0.70">Decoração</li>
-          <li data-at="0.88">Na mesa</li>
+          <li data-at="0.055">Massa</li>
+          <li data-at="0.165">Recheio rosa</li>
+          <li data-at="0.28">Massa</li>
+          <li data-at="0.39">Recheio branco</li>
+          <li data-at="0.51">Massa</li>
+          <li data-at="0.59">Recheio rosa</li>
+          <li data-at="0.72">Massa</li>
+          <li data-at="0.845">Decoração</li>
         </ol>
 
         <a href="#bolos" class="skip" id="skip">pular animação <span aria-hidden="true">↓</span></a>
@@ -509,7 +508,7 @@
     <p class="footer__fine">© <span id="year"></span> Amorino Confeitaria</p>
   </footer>
 
-  <script src="js/site.js?v=4"></script>
-  <script type="module" src="js/cake.js?v=4"></script>
+  <script src="js/site.js?v=5"></script>
+  <script src="js/bolo.js?v=5"></script>
 </body>
 </html>
