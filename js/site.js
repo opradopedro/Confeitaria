@@ -1,6 +1,6 @@
-// Configuração da confeitaria — troque pelo número real do WhatsApp (DDI + DDD + número, só dígitos).
+// Configuração da confeitaria (WhatsApp: DDI + DDD + número, só dígitos).
 const AMORINO = {
-  whatsapp: '5511999999999',
+  whatsapp: '5511998951888',
   instagram: 'https://www.instagram.com/amorinoconfeitaria_/',
 };
 
@@ -17,30 +17,37 @@ document.querySelectorAll('.js-whatsapp').forEach((a) => {
 
 document.getElementById('year').textContent = new Date().getFullYear();
 
-// Borda de "chocolate escorrendo" dos títulos (gerada para ficar sempre contínua)
-(function buildDrips() {
-  let seed = 7;
-  const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
-  document.querySelectorAll('svg.drip path').forEach((path) => {
-    let x = 0;
-    let d = 'M0 0 L0 22 ';
-    while (x < 1200) {
-      const gap = 30 + rand() * 50;
-      const w = 34 + rand() * 30;
-      const len = 30 + rand() * 75;
-      const x1 = Math.min(x + gap, 1200);
-      d += `C${x + gap * 0.5} 22 ${x1 - 6} 26 ${x1} 34 `;
-      if (x1 >= 1200) break;
-      const x2 = x1 + w;
-      d += `C${x1 + 4} ${len} ${x1 + 2} ${len + 12} ${x1 + w / 2} ${len + 12} `;
-      d += `C${x2 - 2} ${len + 12} ${x2 - 4} ${len} ${x2} 34 `;
-      d += `C${x2 + 6} 26 ${x2 + 10} 22 ${x2 + 18} 22 `;
-      x = x2 + 18;
-    }
-    d += 'L1200 22 L1200 0 Z';
-    path.setAttribute('d', d);
+// Botão discreto para pular a animação do bolo
+(function skipButton() {
+  const skip = document.getElementById('skip');
+  const build = document.querySelector('.build');
+  if (!skip || !build) return;
+  skip.addEventListener('click', (e) => {
+    e.preventDefault();
+    const target = document.getElementById('bolos');
+    window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY, behavior: 'instant' });
   });
+  const update = () => {
+    const end = build.offsetTop + build.offsetHeight - window.innerHeight * 1.2;
+    skip.classList.toggle('is-hidden', window.scrollY > end);
+  };
+  window.addEventListener('scroll', update, { passive: true });
+  update();
 })();
+
+// Copiar chave PIX
+document.querySelectorAll('[data-copy]').forEach((btn) => {
+  btn.addEventListener('click', async () => {
+    const original = btn.textContent;
+    try {
+      await navigator.clipboard.writeText(btn.dataset.copy);
+      btn.textContent = 'Chave copiada!';
+    } catch {
+      btn.textContent = btn.dataset.copy;
+    }
+    setTimeout(() => { btn.textContent = original; }, 2200);
+  });
+});
 
 // Montador de pedido
 (function orderForm() {
@@ -54,8 +61,9 @@ document.getElementById('year').textContent = new Date().getFullYear();
   const data = form.querySelector('#data');
 
   const today = new Date();
-  today.setDate(today.getDate() + 2);
-  data.min = today.toISOString().slice(0, 10);
+  today.setDate(today.getDate() + 5); // bolos festivos: 5 dias de antecedência
+  const pad = (n) => String(n).padStart(2, '0');
+  data.min = `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`;
 
   const brl = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 

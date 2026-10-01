@@ -234,9 +234,9 @@ function woodTextures() {
 function stripeTexture() {
   const W = 1024, H = 1024;
   const [c, g] = makeCanvas(W, H);
-  g.fillStyle = '#f8efc6';
+  g.fillStyle = '#f7f4d0';
   g.fillRect(0, 0, W, H);
-  g.fillStyle = '#e9bfc6';
+  g.fillStyle = '#efc6da';
   const stripes = 8;
   const sw = W / stripes;
   for (let s = 0; s < stripes; s++) {
@@ -287,26 +287,22 @@ function strawberryTexture() {
   return { map: toTexture(c), bump: toTexture(b, { srgb: false }) };
 }
 
+// Etiqueta listrada com o logo da Amorino (img/logo-amorino.webp).
 function labelTexture() {
-  const [c, g] = makeCanvas(256, 256);
+  const [c, g] = makeCanvas(512, 512);
+  for (let x = 0; x < 512; x += 32) {
+    g.fillStyle = (x / 32) % 2 ? '#fbfbf0' : '#f1cadf';
+    g.fillRect(x, 0, 32, 512);
+  }
   const t = toTexture(c);
   t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping;
-  t.userData.draw = () => {
-  for (let x = 0; x < 256; x += 16) {
-    g.fillStyle = (x / 16) % 2 ? '#fbf3ea' : '#f2cfd6';
-    g.fillRect(x, 0, 16, 256);
-  }
-  g.fillStyle = '#4b2e1e';
-  g.font = '64px Pacifico, cursive';
-  g.textAlign = 'center';
-  g.save();
-  g.translate(128, 140);
-  g.rotate(-0.25);
-  g.fillText('Amorino', 0, 0);
-  g.restore();
-  t.needsUpdate = true;
+  const logo = new Image();
+  logo.onload = () => {
+    const w = 400, h = (logo.height / logo.width) * w;
+    g.drawImage(logo, (512 - w) / 2, (512 - h) / 2, w, h);
+    t.needsUpdate = true;
   };
-  t.userData.draw();
+  logo.src = 'img/logo-amorino.webp';
   return t;
 }
 
@@ -1116,11 +1112,9 @@ window.__renderAt = (p) => {
 
 (document.fonts?.ready ?? Promise.resolve()).finally(() => {
   if (DEBUG) {
-    M.label.map.userData.draw();
     loader.classList.add('is-done');
     return;
   }
-  M.label.map.userData.draw();
   applyProgress(smooth_p);
   updateCamera(smooth_p, 0);
   renderer.compile(scene, camera);
