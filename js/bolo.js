@@ -14,9 +14,13 @@
     animacao: [0.0, 0.7],    // 0% bolo explodido → 70% bolo montado (o resto fica parado no montado)
     // >1 adianta o começo (o vídeo original é lento no início) e desacelera no fim
     aceleraInicio: 1.6,
-    rotulos: [0.02, 0.3],    // rótulos das camadas somem nesse intervalo
+    // Rótulos e cartão final não seguem a velocidade do dedo: ao passar do ponto,
+    // animam sozinhos com duração fixa (rolada rápida não faz "piscar")
+    rotulosSomem: 0.06,      // ponto da rolagem em que os rótulos começam a sumir
+    duracaoRotulos: 500,     // ms
+    duracaoFinal: 700,       // ms
     intro: [0.0, 0.15],      // texto de abertura some
-    final: [0.62, 0.8],      // texto do bolo + botão de encomenda aparece (no celular: cartão cresce)
+    finalAbre: 0.6,          // ponto da rolagem em que o texto final aparece (no celular: o cartão cresce)
     subidaMobile: 0.22,      // no celular, quanto o bolo sobe (fração da altura do frame) quando o cartão cresce
   };
 
@@ -132,8 +136,8 @@
   function updateUI() {
     const p = smoothP;
     const montagem = montagemAt(p);
-    // rótulos acompanham a altura da camada (do explodido ao montado) e somem aos poucos
-    const kl = 1 - smooth(seg(p, BOLO.rotulos));
+    // rótulos acompanham a altura da camada (do explodido ao montado); a opacidade vem da animação temporizada
+    const kl = 1 - smooth(tl);
     for (const li of labels) {
       const y = (+li.dataset.y0 + (+li.dataset.y1 - +li.dataset.y0) * montagem) * H;
       const side = li.classList.contains('desc__label--left') ? 1 : -1;
@@ -142,7 +146,7 @@
       li.style.visibility = kl <= 0.001 ? 'hidden' : 'visible';
     }
     fade(intro, 1 - smooth(seg(p, BOLO.intro)), -40);
-    const kf = smooth(seg(p, BOLO.final));
+    const kf = smooth(tf);
     if (portrait()) {
       // celular: o cartão está sempre visível e cresce de compacto (0) a completo (1);
       // o bolo sobe um pouco para não ficar atrás do cartão grande
@@ -179,9 +183,28 @@
     if (smoothP !== target) requestAnimationFrame(tick);
     else ticking = false;
   }
+  // Animações temporizadas: tl (rótulos sumindo) e tf (cartão final) andam de 0 a 1
+  // com velocidade fixa em direção ao alvo definido pela posição da rolagem.
+  let tl = target > BOLO.rotulosSomem ? 1 : 0;
+  let tf = target > BOLO.finalAbre ? 1 : 0;
+  let animando = false;
+  let ultimo = 0;
+  function animar(agora) {
+    const dt = ultimo ? agora - ultimo : 16;
+    ultimo = agora;
+    const alvoL = target > BOLO.rotulosSomem ? 1 : 0;
+    const alvoF = target > BOLO.finalAbre ? 1 : 0;
+    const passo = (v, alvo, dur) => (v < alvo ? Math.min(alvo, v + dt / dur) : Math.max(alvo, v - dt / dur));
+    tl = passo(tl, alvoL, BOLO.duracaoRotulos);
+    tf = passo(tf, alvoF, BOLO.duracaoFinal);
+    updateUI();
+    if (tl !== alvoL || tf !== alvoF) requestAnimationFrame(animar);
+    else { animando = false; ultimo = 0; }
+  }
   function onScroll() {
     target = progress();
     if (!ticking) { ticking = true; requestAnimationFrame(tick); }
+    if (!animando) { animando = true; requestAnimationFrame(animar); }
   }
 
   window.addEventListener('scroll', onScroll, { passive: true });
