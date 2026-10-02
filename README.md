@@ -1,6 +1,6 @@
 # Amorino Confeitaria
 
-Site da Amorino Confeitaria (São Caetano do Sul, SP). Na abertura, o Bolo de Maracujá aparece "desconstruído": as camadas (massa black, mousse de maracujá, calda com sementes) começam separadas e se juntam conforme o scroll. A animação é uma sequência de frames WebP (`img/bolo-maracuja/frames/`, e `img/bolo-maracuja/frames-mobile/` em telas pequenas) desenhada num `<canvas>` pelo `js/bolo.js`.
+Site da Amorino Confeitaria (São Caetano do Sul, SP). Na abertura, o Bolo de Maracujá aparece "desconstruído": as camadas (massa black, maracujá trufado, calda com sementes) começam separadas e se juntam conforme o scroll. A animação é uma sequência de frames WebP (`img/bolo-maracuja/frames/`, e `img/bolo-maracuja/frames-mobile/` em telas pequenas) desenhada num `<canvas>` pelo `js/bolo.js`.
 
 Há um botão discreto "pular animação" para ir direto ao cardápio.
 
