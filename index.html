@@ -10,20 +10,26 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400..800,100&family=Lexend:wght@300;400;500;600;700&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=11">
+  <link rel="stylesheet" href="styles.css?v=12">
 </head>
 <body>
 
-  <header class="topbar">
-    <a href="#inicio" class="brand" aria-label="Amorino Confeitaria — início">
-      <img src="img/logo-amorino.webp" alt="Amorino" width="900" height="433">
-    </a>
-    <nav class="topbar__nav" aria-label="Principal">
-      <a href="#bolos">Bolos</a>
-      <a href="#doces">Doces</a>
-      <a href="#como-encomendar">Como encomendar</a>
-      <a href="#" class="btn btn--small js-whatsapp">WhatsApp</a>
-    </nav>
+  <header class="topbar" id="topbar">
+    <div class="topbar__pill">
+      <a href="#inicio" class="brand" aria-label="Amorino Confeitaria — início">
+        <img src="img/logo-amorino.webp" alt="Amorino" width="900" height="433">
+      </a>
+      <nav class="topbar__nav" id="topbar-nav" aria-label="Principal">
+        <a href="#bolos">Bolos</a>
+        <a href="#doces">Doces</a>
+        <a href="#marmitinhas">Marmitinhas</a>
+        <a href="#como-encomendar">Como encomendar</a>
+      </nav>
+      <a href="#" class="btn btn--small js-whatsapp topbar__wa">WhatsApp</a>
+      <button type="button" class="topbar__toggle" id="topbar-toggle" aria-expanded="false" aria-controls="topbar-nav" aria-label="Abrir menu">
+        <span></span><span></span>
+      </button>
+    </div>
   </header>
 
   <main>
@@ -431,7 +437,7 @@
     <p class="footer__fine">© <span id="year"></span> Amorino Confeitaria</p>
   </footer>
 
-  <script src="js/site.js?v=11"></script>
-  <script src="js/bolo.js?v=11"></script>
+  <script src="js/site.js?v=12"></script>
+  <script src="js/bolo.js?v=12"></script>
 </body>
 </html>

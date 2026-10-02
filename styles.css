@@ -26,6 +26,7 @@
 
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
+section[id] { scroll-margin-top: 76px; } /* links do menu não param embaixo do menu fixo */
 html { scroll-behavior: smooth; }
 body {
   margin: 0;
@@ -83,35 +84,64 @@ p { margin: 0 0 1em; }
 .btn--cream:hover { background: var(--pink); border-color: var(--pink); }
 .btn-row { display: flex; gap: 12px; flex-wrap: wrap; }
 
-/* ---------- Top bar ---------- */
+/* ---------- Top bar: menu em pílula, fixo no topo ---------- */
 .topbar {
-  position: fixed; inset: 0 0 auto 0; z-index: 50;
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 14px clamp(16px, 4vw, 40px);
+  position: fixed; top: 12px; left: 0; right: 0; z-index: 50;
+  padding: 0 12px;
   pointer-events: none;
 }
-.topbar > * { pointer-events: auto; }
-.brand {
-  display: block; padding: 14px 26px 16px; border-radius: 999px;
-  background: rgba(251, 251, 240, .82);
-  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 6px 24px -12px rgba(85,40,20,.4);
+.topbar__pill {
+  position: relative;
+  width: min(1100px, 100%); margin: 0 auto;
+  display: flex; align-items: center; gap: 18px;
+  padding: 8px 8px 8px 22px;
+  border-radius: 999px;
+  background: rgba(251, 251, 240, .9);
+  backdrop-filter: blur(14px) saturate(1.2); -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  border: 1px solid rgba(85, 40, 20, .08);
+  box-shadow: 0 10px 30px -16px rgba(85, 40, 20, .45);
+  pointer-events: auto;
+  transition: padding .3s, box-shadow .3s, background .3s;
 }
-.brand img { width: 104px; height: auto; }
-.topbar__nav {
-  display: flex; align-items: center; gap: 22px;
-  background: rgba(251, 251, 240, .82);
-  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-  padding: 8px 8px 8px 22px; border-radius: 999px;
-  box-shadow: 0 6px 24px -12px rgba(85,40,20,.4);
+.topbar.is-scrolled .topbar__pill {
+  padding-top: 5px; padding-bottom: 5px;
+  background: rgba(251, 251, 240, .96);
+  box-shadow: 0 14px 34px -14px rgba(85, 40, 20, .5);
 }
-.topbar__nav a:not(.btn) { text-decoration: none; font-weight: 500; font-size: 14px; color: var(--choco); }
-.topbar__nav a:not(.btn):hover { color: var(--pink-hot); }
-@media (max-width: 720px) {
-  .topbar__nav a:not(.btn) { display: none; }
-  .topbar__nav { padding: 6px; }
-  .brand { padding: 11px 20px 13px; }
-  .brand img { width: 76px; }
+.brand { display: block; flex: none; line-height: 0; }
+.brand img { width: 92px; height: auto; transition: width .3s; }
+.topbar.is-scrolled .brand img { width: 80px; }
+.topbar__nav { flex: 1; display: flex; justify-content: center; gap: clamp(14px, 2.4vw, 30px); }
+.topbar__nav a { text-decoration: none; font-weight: 500; font-size: 14px; color: var(--choco); padding: 6px 2px; }
+.topbar__nav a:hover { color: var(--pink-hot); }
+.topbar__wa { flex: none; }
+.topbar__toggle { display: none; }
+
+@media (max-width: 760px) {
+  .topbar__pill { gap: 8px; padding: 6px 6px 6px 18px; justify-content: space-between; }
+  .brand { margin-right: auto; }
+  .brand img, .topbar.is-scrolled .brand img { width: 74px; }
+  .topbar__toggle {
+    display: grid; place-content: center; gap: 5px;
+    width: 40px; height: 40px; border-radius: 50%;
+    border: 1.5px solid var(--choco); background: transparent; cursor: pointer;
+  }
+  .topbar__toggle span { display: block; width: 16px; height: 2px; border-radius: 2px; background: var(--choco); transition: transform .25s; }
+  .topbar.is-open .topbar__toggle span:first-child { transform: translateY(3.5px) rotate(45deg); }
+  .topbar.is-open .topbar__toggle span:last-child { transform: translateY(-3.5px) rotate(-45deg); }
+  /* links num painel arredondado que abre embaixo da pílula */
+  .topbar__nav {
+    position: absolute; top: calc(100% + 8px); left: 0; right: 0;
+    flex-direction: column; gap: 0; padding: 8px;
+    background: rgba(251, 251, 240, .97);
+    border-radius: 24px; border: 1px solid rgba(85, 40, 20, .08);
+    box-shadow: 0 18px 40px -18px rgba(85, 40, 20, .5);
+    opacity: 0; transform: translateY(-8px); visibility: hidden;
+    transition: opacity .25s, transform .25s, visibility .25s;
+  }
+  .topbar.is-open .topbar__nav { opacity: 1; transform: none; visibility: visible; }
+  .topbar__nav a { padding: 13px 16px; font-size: 16px; border-radius: 16px; }
+  .topbar__nav a:hover { background: var(--pink-2); }
 }
 
 /* ---------- Bolo desconstruído (camadas se juntam com o scroll) ---------- */
@@ -192,7 +222,9 @@ p { margin: 0 0 1em; }
   }
   /* cada cartão com a altura do próprio conteúdo, alinhados embaixo */
   .desc__text { position: absolute; left: 16px; right: 16px; bottom: 16px; z-index: 2; align-items: end; }
-  .desc__intro, .desc__final {
+  /* no celular, sem cartão de abertura (o bolo fica livre); o título continua para leitores de tela */
+  .desc__intro { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .desc__final {
     background: var(--cream); /* opaco: o bolo escuro não "vaza" atrás do logo */
     border-radius: 22px; padding: 18px 20px;
     box-shadow: 0 18px 50px -24px rgba(85, 40, 20, .45);
@@ -200,10 +232,6 @@ p { margin: 0 0 1em; }
   }
   .desc__logo { width: min(130px, 36vw); margin: 0 auto 2px; }
   .desc__tagline { margin-bottom: 6px; font-size: 15px; }
-  .desc__intro .scroll-hint { font-size: 12px; }
-  .desc__intro .scroll-hint__mouse { width: 16px; height: 26px; }
-  .desc__intro .eyebrow { margin-bottom: 6px; font-size: 10px; }
-  .desc__intro { padding: 12px 16px; }
   .desc__title { font-size: clamp(34px, 10vw, 46px); }
   .desc__title span { display: inline; }
   .desc__lead { font-size: 15px; margin: 0 auto 14px; }

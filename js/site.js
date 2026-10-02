@@ -17,6 +17,25 @@ document.querySelectorAll('.js-whatsapp').forEach((a) => {
 
 document.getElementById('year').textContent = new Date().getFullYear();
 
+// Menu do topo: fica mais compacto ao rolar; no celular abre/fecha os links
+(function topbar() {
+  const bar = document.getElementById('topbar');
+  const toggle = document.getElementById('topbar-toggle');
+  if (!bar) return;
+  const onScroll = () => bar.classList.toggle('is-scrolled', window.scrollY > 10);
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+  const setOpen = (open) => {
+    bar.classList.toggle('is-open', open);
+    toggle.setAttribute('aria-expanded', String(open));
+    toggle.setAttribute('aria-label', open ? 'Fechar menu' : 'Abrir menu');
+  };
+  toggle.addEventListener('click', () => setOpen(!bar.classList.contains('is-open')));
+  bar.querySelectorAll('.topbar__nav a').forEach((a) => a.addEventListener('click', () => setOpen(false)));
+  document.addEventListener('click', (e) => { if (!bar.contains(e.target)) setOpen(false); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setOpen(false); });
+})();
+
 // Copiar chave PIX
 document.querySelectorAll('[data-copy]').forEach((btn) => {
   btn.addEventListener('click', async () => {
