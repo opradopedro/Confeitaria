@@ -17,24 +17,6 @@ document.querySelectorAll('.js-whatsapp').forEach((a) => {
 
 document.getElementById('year').textContent = new Date().getFullYear();
 
-// Botão discreto para pular a animação do bolo
-(function skipButton() {
-  const skip = document.getElementById('skip');
-  const build = document.querySelector('.desc');
-  if (!skip || !build) return;
-  skip.addEventListener('click', (e) => {
-    e.preventDefault();
-    const target = document.getElementById('bolos');
-    window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY, behavior: 'instant' });
-  });
-  const update = () => {
-    const end = build.offsetTop + build.offsetHeight - window.innerHeight * 1.2;
-    skip.classList.toggle('is-hidden', window.scrollY > end);
-  };
-  window.addEventListener('scroll', update, { passive: true });
-  update();
-})();
-
 // Copiar chave PIX
 document.querySelectorAll('[data-copy]').forEach((btn) => {
   btn.addEventListener('click', async () => {

@@ -11,12 +11,12 @@
     pastaMobile: 'img/bolo-maracuja/frames-mobile', // telas pequenas (432×768)
     fundo: '#DABFAD',                               // cor real do fundo dos frames
     // trechos do progresso da seção (0 = topo, 1 = fim)
-    animacao: [0.0, 0.85],   // 0% bolo explodido → 85% bolo montado (o resto fica parado no montado)
+    animacao: [0.0, 0.7],    // 0% bolo explodido → 70% bolo montado (o resto fica parado no montado)
     // >1 adianta o começo (o vídeo original é lento no início) e desacelera no fim
     aceleraInicio: 1.6,
-    rotulos: [0.03, 0.35],   // rótulos das camadas somem nesse intervalo
+    rotulos: [0.02, 0.3],    // rótulos das camadas somem nesse intervalo
     intro: [0.0, 0.15],      // texto de abertura some
-    final: [0.8, 0.93],      // texto do bolo + botão de encomenda aparece
+    final: [0.62, 0.8],      // texto do bolo + botão de encomenda aparece
   };
 
   const section = document.querySelector('.desc');
@@ -157,7 +157,7 @@
   let pos = frameAt(smoothP);
   let ticking = false;
   function tick() {
-    smoothP += (target - smoothP) * 0.35;
+    smoothP += (target - smoothP) * 0.4;
     if (Math.abs(target - smoothP) < 0.00005) smoothP = target;
     pos = frameAt(smoothP);
     draw(false);
