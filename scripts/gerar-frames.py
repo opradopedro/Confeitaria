@@ -10,7 +10,7 @@ Passos:
      na mesma medida — a animação não "trava".
   3. Mede a cor real do fundo (mediana das bordas) e normaliza o fundo de cada quadro
      para essa cor (o vídeo tem vinheta/degradê), esfumando as bordas na mesma cor.
-  4. Salva img/bolo-maracuja/frames/frame-001.webp… (720×1280), frames-mobile/ (432×768)
+  4. Salva img/bolo-maracuja/frames/frame-001.webp… (720×1280), frames-mobile/ (720×1280, compressão um pouco maior)
      e explodido-poster.webp (explodido.jpg alinhado e com o mesmo fundo, para o carregamento).
 
 Requer: ffmpeg, Pillow e numpy (pip install pillow numpy).
@@ -31,7 +31,7 @@ VIDEO = os.path.join(PASTA, 'montagem.mp4')
 SAIDA = os.path.join(PASTA, 'frames')
 SAIDA_MOBILE = os.path.join(PASTA, 'frames-mobile')
 TAM = (720, 1280)
-TAM_MOBILE = (432, 768)
+TAM_MOBILE = (720, 1280)  # resolução cheia do vídeo (o celular estica a imagem; menor fica borrado)
 
 
 def ffmpeg(*args):
@@ -130,8 +130,8 @@ def main():
         for k, i in enumerate(escolhidos):
             img = normalizar(Image.open(quadros[i]), suav[k])
             nome = f'frame-{k + 1:03d}.webp'
-            img.resize(TAM, Image.LANCZOS).save(os.path.join(SAIDA, nome), 'WEBP', quality=80, method=6)
-            img.resize(TAM_MOBILE, Image.LANCZOS).save(os.path.join(SAIDA_MOBILE, nome), 'WEBP', quality=74, method=6)
+            img.resize(TAM, Image.LANCZOS).save(os.path.join(SAIDA, nome), 'WEBP', quality=88, method=6)
+            img.resize(TAM_MOBILE, Image.LANCZOS).save(os.path.join(SAIDA_MOBILE, nome), 'WEBP', quality=82, method=6)
 
         # 4. poster: explodido.jpg alinhado ao 1º quadro e com o mesmo fundo
         exp = Image.open(os.path.join(PASTA, 'explodido.jpg')).convert('RGB')
@@ -140,7 +140,7 @@ def main():
         dy = min(range(exp.size[1] - H + 1),
                  key=lambda t: sum(ImageStat.Stat(ImageChops.difference(exp.crop((0, t, W, t + H)).resize((90, 160)), ref)).mean))
         poster = normalizar(exp.crop((0, dy, W, dy + H)), suav[0])
-        poster.resize(TAM_MOBILE, Image.LANCZOS).save(os.path.join(PASTA, 'explodido-poster.webp'), 'WEBP', quality=78, method=6)
+        poster.resize(TAM, Image.LANCZOS).save(os.path.join(PASTA, 'explodido-poster.webp'), 'WEBP', quality=85, method=6)
 
     print(f'{N} frames salvos. Use {hexa} como fundo da seção (styles.css e js/bolo.js).')
 

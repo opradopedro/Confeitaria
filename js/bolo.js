@@ -8,7 +8,7 @@
   const BOLO = {
     frames: 120,                                    // quantidade de frames em cada pasta
     pasta: 'img/bolo-maracuja/frames',              // telas grandes (720×1280)
-    pastaMobile: 'img/bolo-maracuja/frames-mobile', // telas pequenas (432×768)
+    pastaMobile: 'img/bolo-maracuja/frames-mobile', // telas pequenas (720×1280, arquivo mais leve)
     fundo: '#DABFAD',                               // cor real do fundo dos frames
     // trechos do progresso da seção (0 = topo, 1 = fim)
     animacao: [0.0, 0.7],    // 0% bolo explodido → 70% bolo montado (o resto fica parado no montado)
@@ -85,14 +85,14 @@
   // O canvas tem a mesma proporção do vídeo (9:16): o frame ocupa o canvas todo.
   let W = 0, H = 0, dpr = 1;
   function resize() {
-    dpr = Math.min(window.devicePixelRatio || 1, mobile ? 1.5 : 2);
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
     W = visual.clientWidth;
     H = visual.clientHeight;
     canvas.width = Math.round(W * dpr);
     canvas.height = Math.round(H * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'medium';
+    ctx.imageSmoothingQuality = 'high';
     draw(true);
     updateUI();
   }
