@@ -164,6 +164,7 @@ p { margin: 0 0 1em; }
 .desc__text { position: relative; display: grid; align-items: center; }
 .desc__intro, .desc__final { grid-area: 1 / 1; will-change: opacity, transform; }
 .desc__final { opacity: 0; visibility: hidden; }
+.desc__compact { display: none; } /* só no celular */
 .desc__logo { width: min(300px, 60vw); margin: 0 0 6px; }
 .desc__logo img { width: 100%; height: auto; }
 .desc__tagline { font-family: var(--f-mono); font-size: clamp(18px, 2vw, 24px); color: var(--choco); margin-bottom: 18px; }
@@ -224,15 +225,28 @@ p { margin: 0 0 1em; }
   .desc__text { position: absolute; left: 16px; right: 16px; bottom: 16px; z-index: 2; align-items: end; }
   /* no celular, sem cartão de abertura (o bolo fica livre); o título continua para leitores de tela */
   .desc__intro { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  /* cartão do bolo: --k vai de 0 (compacto, ao entrar) a 1 (completo), conforme a rolagem */
   .desc__final {
-    background: var(--cream); /* opaco: o bolo escuro não "vaza" atrás do logo */
-    border-radius: 22px; padding: 18px 20px;
+    --k: 0;
+    opacity: 1; visibility: visible;
+    background: var(--cream); /* opaco: o bolo escuro não "vaza" por trás */
+    border-radius: 22px;
+    padding: calc(12px + 6px * var(--k)) 20px calc(12px + 6px * var(--k));
     box-shadow: 0 18px 50px -24px rgba(85, 40, 20, .45);
     text-align: center;
+    width: calc(70% + 30% * var(--k)); justify-self: center;
   }
+  .desc__more { overflow: hidden; max-height: calc(var(--k) * 260px); opacity: var(--k); }
+  .desc__more .eyebrow { margin-bottom: 8px; }
+  .desc__compact {
+    display: flex; align-items: center; justify-content: center; gap: 14px;
+    overflow: hidden; max-height: calc((1 - var(--k)) * 60px); opacity: calc(1 - var(--k) * 1.6);
+  }
+  .desc__compact .scroll-hint { font-size: 12px; gap: 6px; }
+  .desc__compact .scroll-hint__mouse { width: 16px; height: 26px; }
+  .desc__final .desc__title { font-size: calc(26px + 16px * var(--k)); margin-bottom: calc(8px + 6px * var(--k)); }
   .desc__logo { width: min(130px, 36vw); margin: 0 auto 2px; }
   .desc__tagline { margin-bottom: 6px; font-size: 15px; }
-  .desc__title { font-size: clamp(34px, 10vw, 46px); }
   .desc__title span { display: inline; }
   .desc__lead { font-size: 15px; margin: 0 auto 14px; }
   .desc__final .btn-row { justify-content: center; }

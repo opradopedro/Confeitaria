@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400..800,100&family=Lexend:wght@300;400;500;600;700&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=13">
+  <link rel="stylesheet" href="styles.css?v=14">
 </head>
 <body>
 
@@ -44,13 +44,20 @@
               <p class="desc__tagline">uma doce dose de carinho</p>
               <p class="scroll-hint"><span class="scroll-hint__mouse"></span>Role e veja as camadas se encontrarem</p>
             </div>
+            <!-- No celular: começa compacto (título + encomenda + ícone de rolar) e cresce com a rolagem -->
             <div class="desc__final" id="desc-final">
-              <p class="eyebrow">Massa black · mousse · calda com sementes</p>
+              <div class="desc__more"><p class="eyebrow">Massa black · mousse · calda com sementes</p></div>
               <h2 class="desc__title">Bolo de <span>Maracujá</span></h2>
-              <p class="desc__lead">Massa black, mousse de maracujá e calda de maracujá com sementes, camada por camada.</p>
-              <div class="btn-row">
-                <a href="#" class="btn js-whatsapp" data-msg="Oi, Amorino! Quero encomendar o Bolo de Maracujá 💛">Encomendar pelo WhatsApp</a>
-                <a href="#bolos" class="btn btn--ghost">Ver cardápio</a>
+              <div class="desc__compact">
+                <a href="#encomende" class="btn btn--small">Fazer encomenda</a>
+                <span class="scroll-hint" aria-hidden="true"><span class="scroll-hint__mouse"></span>role</span>
+              </div>
+              <div class="desc__more">
+                <p class="desc__lead">Massa black, mousse de maracujá e calda de maracujá com sementes, camada por camada.</p>
+                <div class="btn-row">
+                  <a href="#" class="btn js-whatsapp" data-msg="Oi, Amorino! Quero encomendar o Bolo de Maracujá 💛">Encomendar pelo WhatsApp</a>
+                  <a href="#bolos" class="btn btn--ghost">Ver cardápio</a>
+                </div>
               </div>
             </div>
           </div>
@@ -437,7 +444,7 @@
     <p class="footer__fine">© <span id="year"></span> Amorino Confeitaria</p>
   </footer>
 
-  <script src="js/site.js?v=13"></script>
-  <script src="js/bolo.js?v=13"></script>
+  <script src="js/site.js?v=14"></script>
+  <script src="js/bolo.js?v=14"></script>
 </body>
 </html>

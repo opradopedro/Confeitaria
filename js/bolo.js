@@ -16,7 +16,8 @@
     aceleraInicio: 1.6,
     rotulos: [0.02, 0.3],    // rótulos das camadas somem nesse intervalo
     intro: [0.0, 0.15],      // texto de abertura some
-    final: [0.62, 0.8],      // texto do bolo + botão de encomenda aparece
+    final: [0.62, 0.8],      // texto do bolo + botão de encomenda aparece (no celular: cartão cresce)
+    subidaMobile: 0.22,      // no celular, quanto o bolo sobe (fração da altura do frame) quando o cartão cresce
   };
 
   const section = document.querySelector('.desc');
@@ -119,6 +120,9 @@
   }
 
   /* ----------------------------- textos ----------------------------------- */
+  const portraitMQ = window.matchMedia('(max-width: 820px), (orientation: portrait)');
+  const portrait = () => portraitMQ.matches;
+
   function fade(el, k, dy) {
     el.style.opacity = String(k);
     el.style.transform = `translateY(${(1 - k) * dy}px)`;
@@ -138,7 +142,17 @@
       li.style.visibility = kl <= 0.001 ? 'hidden' : 'visible';
     }
     fade(intro, 1 - smooth(seg(p, BOLO.intro)), -40);
-    fade(final, smooth(seg(p, BOLO.final)), 30);
+    const kf = smooth(seg(p, BOLO.final));
+    if (portrait()) {
+      // celular: o cartão está sempre visível e cresce de compacto (0) a completo (1);
+      // o bolo sobe um pouco para não ficar atrás do cartão grande
+      final.style.cssText = '';
+      final.style.setProperty('--k', kf.toFixed(3));
+      visual.style.transform = `translateY(${(-kf * BOLO.subidaMobile * H).toFixed(1)}px)`;
+    } else {
+      visual.style.transform = '';
+      fade(final, kf, 30);
+    }
   }
 
   /* ----------------------------- scroll ----------------------------------- */
