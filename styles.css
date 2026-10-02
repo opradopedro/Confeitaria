@@ -317,9 +317,19 @@ p { margin: 0 0 1em; }
 /* Cardápio */
 .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px; }
 @media (max-width: 760px) { .menu-grid { grid-template-columns: 1fr; } }
-.menu-card { position: relative; border-radius: var(--radius); padding: 26px 30px; min-height: 170px; }
-.menu-card--butter { background: var(--butter); }
-.menu-card--pink { background: var(--pink); }
+.menu-card {
+  position: relative; border-radius: var(--radius); padding: 26px 30px; min-height: 170px;
+  /* sombra para destacar os cartões das listras do fundo */
+  box-shadow: 0 2px 6px rgba(85, 40, 20, .08), 0 14px 32px -14px rgba(85, 40, 20, .35);
+}
+/* cores alternadas: branco, rosa, branco, rosa… */
+.menu-card:nth-child(odd) { background: var(--cream); }
+.menu-card:nth-child(even) { background: var(--pink); }
+/* em duas colunas, xadrez (senão vira uma coluna branca e outra rosa) */
+@media (min-width: 761px) {
+  .menu-card:nth-child(4n+3) { background: var(--pink); }
+  .menu-card:nth-child(4n) { background: var(--cream); }
+}
 .menu-card h3 { font-size: 24px; color: var(--ink); font-weight: 700; margin-bottom: 10px; }
 .menu-card ul { margin: 0; padding-left: 1.1em; display: grid; gap: 2px; font-size: 17px; max-width: 70%; }
 .kg {
